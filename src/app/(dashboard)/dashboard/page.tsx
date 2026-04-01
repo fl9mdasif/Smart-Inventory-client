@@ -16,19 +16,21 @@ import {
   Clock,
   History,
   Activity as ActivityIcon,
-  TrendingDown
 } from "lucide-react";
 import Link from "next/link";
 import { useGetRecentActivitiesQuery } from "@/redux/api/activityApi";
-import { 
-  AreaChart, 
-  Area, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
-  ResponsiveContainer 
+import {
+  AreaChart,
+  Area,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer
 } from 'recharts';
+import { TActivity } from "@/types/common";
+import { TOrder } from "@/types/common";
+import { TProduct } from "@/types/common";
 
 type StatCardProps = {
   title: string;
@@ -99,10 +101,10 @@ const QuickActionCard = ({
   </Link>
 );
 
-const ActivityItem = ({ activity }: { activity: any }) => {
-  const Icon = activity.type === 'order' ? ShoppingCart : Package;
-  const colorClass = activity.type === 'order' ? 'text-violet-400' : 'text-teal-400';
-  const bgColorClass = activity.type === 'order' ? 'bg-violet-500/10' : 'bg-teal-500/10';
+const ActivityItem = ({ activity }: { activity: TActivity }) => {
+  const Icon = activity.action === 'order' ? ShoppingCart : Package;
+  const colorClass = activity.action === 'order' ? 'text-violet-400' : 'text-teal-400';
+  const bgColorClass = activity.action === 'order' ? 'bg-violet-500/10' : 'bg-teal-500/10';
 
   const time = new Date(activity.createdAt).toLocaleTimeString([], {
     hour: '2-digit',
@@ -116,7 +118,7 @@ const ActivityItem = ({ activity }: { activity: any }) => {
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-slate-300 text-sm leading-snug">
-          {activity.message}
+          {activity.details}
         </p>
         <div className="flex items-center gap-2 mt-1">
           <Clock size={10} className="text-slate-500" />
@@ -132,55 +134,53 @@ const ActivityItem = ({ activity }: { activity: any }) => {
 const DashboardPage = () => {
   const { data: productsData } = useGetAllProductsQuery({});
   const { data: ordersData } = useGetAllOrdersQuery({});
-  const { data: activitiesData, isLoading: activitiesLoading } = useGetRecentActivitiesQuery({});
+  const { data: activitiesData, isLoading: activitiesLoading } = useGetRecentActivitiesQuery({}) as {
+    data: TActivity[];
+    isLoading: boolean;
+  };
 
-  // console.log(activitiesData);
-  const totalProducts = productsData?.data?.length || 0;
-  // const totalProducts = productsData?.data?.length || 0;
+  const totalProducts = (productsData?.data as TProduct[])?.length || 0;
 
-  const pendingOrders = ordersData?.data?.filter((o: any) => o.orderStatus === 'pending' || o.orderStatus === 'confirmed') || [];
-  const completedOrders = ordersData?.data?.filter((o: any) => o.orderStatus === 'delivered') || [];
+  const pendingOrders = (ordersData?.data as TOrder[])?.filter((o: TOrder) => o.orderStatus === 'pending' || o.orderStatus === 'confirmed') || [];
+  const completedOrders = (ordersData?.data as TOrder[])?.filter((o: TOrder) => o.orderStatus === 'delivered') || [];
 
-  // Filtering for low stock and out of stock
-  // Assuming the API returns products with stockQuantity and minStockThreshold
-  const lowStockProducts = productsData?.data?.filter((p: any) =>
+  const lowStockProducts = (productsData?.data as TProduct[])?.filter((p: TProduct) =>
     (p.stockQuantity ?? 0) > 0 && (p.stockQuantity ?? 0) <= (p.minStockThreshold ?? 5)
   ).length || 0;
 
-  const outOfStockProducts = productsData?.data?.filter((p: any) =>
+  const outOfStockProducts = (productsData?.data as TProduct[])?.filter((p: TProduct) =>
     (p.stockQuantity ?? 0) === 0
   ).length || 0;
 
-  // --- Revenue Calculations ---
-  const deliveredOrders = ordersData?.data?.filter((o: any) => o.orderStatus === 'delivered') || [];
+  const deliveredOrders = (ordersData?.data as TOrder[])?.filter((o: TOrder) => o.orderStatus === 'delivered') || [];
 
-  const totalRevenue = deliveredOrders.reduce((sum: number, order: any) => sum + (order.totalAmount || 0), 0);
+  const totalRevenue = deliveredOrders.reduce((sum: number, order: TOrder) => sum + (order.totalAmount || 0), 0);
 
   const today = new Date().toISOString().split('T')[0];
   const revenueToday = deliveredOrders
-    .filter((o: any) => {
+    .filter((o: TOrder) => {
       const deliveredDate = o.deliveredAt ? new Date(o.deliveredAt).toISOString().split('T')[0] : "";
       return deliveredDate === today;
     })
-    .reduce((sum: number, order: any) => sum + (order.totalAmount || 0), 0);
+    .reduce((sum: number, order: TOrder) => sum + (order.totalAmount || 0), 0);
 
-  // --- Chart Data Aggregation (Last 7 Days) ---
   const last7Days = Array.from({ length: 7 }, (_, i) => {
     const d = new Date();
     d.setDate(d.getDate() - i);
     return d.toISOString().split('T')[0];
   }).reverse();
 
-  const chartData = last7Days.map(date => {
-    const dailyRevenue = deliveredOrders
-      .filter((o: any) => (o.deliveredAt ? new Date(o.deliveredAt).toISOString().split('T')[0] : "") === date)
-      .reduce((sum: number, order: any) => sum + (order.totalAmount || 0), 0);
-    
-    return {
-      name: new Date(date).toLocaleDateString('en-US', { weekday: 'short' }),
-      revenue: dailyRevenue
-    };
-  });
+  const revenueMap = deliveredOrders.reduce((acc: Record<string, number>, order: TOrder) => {
+    if (!order.deliveredAt) return acc;
+    const date = new Date(order.deliveredAt).toISOString().split('T')[0];
+    acc[date] = (acc[date] || 0) + (order.totalAmount || 0);
+    return acc;
+  }, {});
+
+  const chartData = last7Days.map(date => ({
+    name: new Date(date).toLocaleDateString('en-US', { weekday: 'short' }),
+    revenue: revenueMap[date] || 0
+  }));
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
@@ -279,7 +279,7 @@ const DashboardPage = () => {
           <div className="p-6 h-full rounded-2xl border border-white/[0.06] bg-[#0d1117] shadow-xl overflow-hidden relative">
             {/* background glow */}
             <div className="absolute top-0 right-0 w-64 h-64 bg-teal-500/5 blur-[100px] pointer-events-none" />
-            
+
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
               <div>
                 <p className="text-[11px] uppercase tracking-widest text-slate-600 font-semibold flex items-center gap-2 mb-1">
@@ -301,42 +301,42 @@ const DashboardPage = () => {
                 <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <defs>
                     <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#14b8a6" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="#14b8a6" stopOpacity={0}/>
+                      <stop offset="5%" stopColor="#14b8a6" stopOpacity={0.3} />
+                      <stop offset="95%" stopColor="#14b8a6" stopOpacity={0} />
                     </linearGradient>
                   </defs>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#ffffff08" />
-                  <XAxis 
-                    dataKey="name" 
+                  <XAxis
+                    dataKey="name"
                     axisLine={false}
                     tickLine={false}
                     tick={{ fill: '#64748b', fontSize: 12 }}
                     dy={10}
                   />
-                  <YAxis 
+                  <YAxis
                     axisLine={false}
                     tickLine={false}
                     tick={{ fill: '#64748b', fontSize: 11 }}
-                    tickFormatter={(val) => `৳${val/1000}k`}
+                    tickFormatter={(val) => `৳${val / 1000}k`}
                   />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: '#0d1117', 
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: '#0d1117',
                       borderColor: '#ffffff10',
                       borderRadius: '12px',
                       boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.5)'
                     }}
                     itemStyle={{ color: '#14b8a6', fontWeight: 600 }}
                     labelStyle={{ color: '#94a3b8', marginBottom: '4px' }}
-                    formatter={(value: any) => [`৳${value.toLocaleString()}`, 'Revenue']}
+                    formatter={(value: unknown) => [`৳${Number(value || 0).toLocaleString()}`, 'Revenue']}
                   />
-                  <Area 
-                    type="monotone" 
-                    dataKey="revenue" 
-                    stroke="#14b8a6" 
+                  <Area
+                    type="monotone"
+                    dataKey="revenue"
+                    stroke="#14b8a6"
                     strokeWidth={3}
-                    fillOpacity={1} 
-                    fill="url(#colorRevenue)" 
+                    fillOpacity={1}
+                    fill="url(#colorRevenue)"
                     animationDuration={2000}
                   />
                 </AreaChart>
@@ -359,7 +359,7 @@ const DashboardPage = () => {
               </div>
             ) : activitiesData?.length > 0 ? (
               <div className="space-y-1 divide-y divide-white/[0.04]">
-                {activitiesData.map((activity: any) => (
+                {activitiesData.map((activity: TActivity) => (
                   <ActivityItem key={activity._id} activity={activity} />
                 ))}
               </div>

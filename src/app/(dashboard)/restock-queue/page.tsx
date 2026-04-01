@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { Loader2, Package, Edit, Search, AlertTriangle, Eye, ArrowLeft } from "lucide-react";
 import toast from "react-hot-toast";
-import { TProduct } from "@/types/common";
+import { TCategory, TProduct } from "@/types/common";
 import ProductFormModal from "../products/ProductFormModal";
 import ProductViewModal from "../products/ProductViewModal";
 import {
@@ -21,7 +21,7 @@ const statusStyle: Record<string, string> = {
 const RestockQueuePage = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
-  
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<TProduct | null>(null);
@@ -38,7 +38,7 @@ const RestockQueuePage = () => {
   });
 
   // FILTERING LOGIC: Only show products needing restock
-  const products: TProduct[] = (productsData?.data ?? []).filter((p: TProduct) => 
+  const products: TProduct[] = (productsData?.data ?? []).filter((p: TProduct) =>
     (p.stockQuantity ?? 0) <= (p.minStockThreshold ?? 5)
   );
 
@@ -53,14 +53,15 @@ const RestockQueuePage = () => {
   const handleSave = async (data: Partial<TProduct>) => {
     const payload = { ...data };
     try {
-      if ((editingProduct as any)?._id) {
-        await updateProduct({ id: (editingProduct as any)._id, data: payload }).unwrap();
+      if (editingProduct?._id) {
+        await updateProduct({ id: editingProduct._id, data: payload as Partial<TProduct> }).unwrap();
         toast.success("Stock updated successfully!");
       }
       handleClose();
       refetch();
-    } catch (err: any) {
-      toast.error(err?.data?.message || err?.data || "Failed to update stock.");
+    } catch (err: unknown) {
+      const apiErr = err as { data?: { message?: string } };
+      toast.error(apiErr.data?.message || "Failed to update stock.");
     }
   };
 
@@ -78,10 +79,10 @@ const RestockQueuePage = () => {
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2 text-teal-500 text-xs font-semibold mb-2 group">
-             <Link href="/dashboard" className="flex items-center gap-1 hover:underline">
-               <ArrowLeft size={12} className="group-hover:-translate-x-0.5 transition-transform" />
-               Back to Dashboard
-             </Link>
+            <Link href="/dashboard" className="flex items-center gap-1 hover:underline">
+              <ArrowLeft size={12} className="group-hover:-translate-x-0.5 transition-transform" />
+              Back to Dashboard
+            </Link>
           </div>
           <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-3">
             <div className="p-2 rounded-xl bg-amber-500/10 border border-amber-500/20">
@@ -140,7 +141,7 @@ const RestockQueuePage = () => {
                   const status = isOutOfStock ? 'out_of_stock' : 'low_stock';
 
                   return (
-                    <tr key={(product as any)._id} className="hover:bg-white/[0.02] transition-colors group">
+                    <tr key={product._id} className="hover:bg-white/[0.02] transition-colors group">
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-3">
                           {product.thumbnail ? (
@@ -153,12 +154,12 @@ const RestockQueuePage = () => {
                           )}
                           <div>
                             <p className="font-medium text-slate-200">{product.name}</p>
-                            <p className="text-[10px] text-slate-500 font-mono uppercase tracking-tighter">{(product as any)?.category?.name || "Product"}</p>
+                            <p className="text-[10px] text-slate-500 font-mono uppercase tracking-tighter">{typeof product.category === 'object' ? (product.category as TCategory).name : "Product"}</p>
                           </div>
                         </div>
                       </td>
                       <td className="px-5 py-3.5 text-slate-400 font-medium">
-                        {(product as any)?.category?.name || "—"}
+                        {typeof product.category === 'object' ? (product.category as TCategory).name : "—"}
                       </td>
                       <td className="px-5 py-3.5 text-center">
                         <span className={`text-lg font-bold ${isOutOfStock ? 'text-rose-500' : 'text-amber-500'}`}>
@@ -175,7 +176,7 @@ const RestockQueuePage = () => {
                       </td>
                       <td className="px-5 py-4 text-center">
                         <div className="flex justify-center gap-2">
-                           <button
+                          <button
                             onClick={() => handleOpenDetail(product)}
                             className="p-1.5 rounded-lg text-slate-500 hover:text-teal-400 hover:bg-teal-500/10 transition-colors"
                             title="View Details"
@@ -208,10 +209,10 @@ const RestockQueuePage = () => {
         product={editingProduct}
       />
 
-      <ProductViewModal 
-        isOpen={isDetailModalOpen} 
-        onClose={handleCloseDetail} 
-        product={viewingProduct} 
+      <ProductViewModal
+        isOpen={isDetailModalOpen}
+        onClose={handleCloseDetail}
+        product={viewingProduct}
       />
     </div>
   );

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { PlusCircle, Loader2, Package, Edit, Trash2, ShoppingCart, Search, Filter, X, Eye } from "lucide-react";
+import { PlusCircle, Loader2, Package, Edit, Trash2, ShoppingCart, Search, Filter, Eye } from "lucide-react";
 import toast from "react-hot-toast";
 import { TProduct, TOrder, TCategory } from "@/types/common";
 import ProductFormModal from "./ProductFormModal";
@@ -45,7 +45,7 @@ const ProductsPage = () => {
 
   // Fetch Categories for filter
   const { data: categoriesData } = useGetAllCategoriesQuery({});
-  const categories: TCategory[] = Array.isArray(categoriesData) ? categoriesData : (categoriesData as any)?.data ?? [];
+  const categories: TCategory[] = (categoriesData as { data: TCategory[] })?.data ?? [];
 
   // Prepare Query Params
   const queryParams: Record<string, unknown> = {};
@@ -71,13 +71,13 @@ const ProductsPage = () => {
   const handleCloseDetail = () => { setIsDetailModalOpen(false); setViewingProduct(null); };
 
   const handleSave = async (data: Partial<TProduct>) => {
-    const payload = { ...data };
-    delete (payload as any)._id;
-    delete (payload as any).createdAt;
-    delete (payload as any).updatedAt;
+    const payload = { ...data } as Record<string, unknown>;
+    delete payload._id;
+    delete payload.createdAt;
+    delete payload.updatedAt;
     try {
-      if ((editingProduct as any)?._id) {
-        await updateProduct({ id: (editingProduct as any)._id, data: payload }).unwrap();
+      if (editingProduct?._id) {
+        await updateProduct({ id: editingProduct._id, data: payload as Partial<TProduct> }).unwrap();
         toast.success("Product updated!");
       } else {
         await createProduct(payload).unwrap();
@@ -85,8 +85,9 @@ const ProductsPage = () => {
       }
       handleClose();
       refetch();
-    } catch (err: any) {
-      toast.error(err?.data?.message || err?.data || "Failed to save product.");
+    } catch (err: unknown) {
+      const apiErr = err as { data?: { message?: string } };
+      toast.error(apiErr.data?.message || "Failed to save products.");
     }
   };
 
@@ -96,8 +97,9 @@ const ProductsPage = () => {
       toast.success("Order placed successfully!");
       handleCloseOrder();
       refetch(); // Refresh stock levels
-    } catch (err: any) {
-      toast.error(err?.data?.message || err?.data || "Failed to place order.");
+    } catch (err: unknown) {
+      const apiErr = err as { data?: { message?: string } };
+      toast.error(apiErr.data?.message || "Failed to place order.");
     }
   };
 
@@ -107,8 +109,9 @@ const ProductsPage = () => {
       await deleteProduct(productId).unwrap();
       toast.success("Product deleted.");
       refetch();
-    } catch (err: any) {
-      toast.error(err?.data?.message || err?.data || "Failed to delete product.");
+    } catch (err: unknown) {
+      const apiErr = err as { data?: { message?: string } };
+      toast.error(apiErr.data?.message || "Failed to delete product.");
     }
   };
 
@@ -196,7 +199,7 @@ const ProductsPage = () => {
               <Package className="w-6 h-6 text-teal-400" />
             </div>
             <p className="text-slate-300 font-medium">No products yet</p>
-            <p className="text-slate-500 text-sm mt-1">Click "Add Product" to get started.</p>
+            <p className="text-slate-500 text-sm mt-1">Click &quot;Add Product&quot; to get started.</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
@@ -218,7 +221,7 @@ const ProductsPage = () => {
                   const status = isOutOfStock ? 'out_of_stock' : (isLowStock ? 'low_stock' : 'active');
 
                   return (
-                    <tr key={(product as any)._id} className="hover:bg-white/[0.02] transition-colors group">
+                    <tr key={product._id} className="hover:bg-white/[0.02] transition-colors group">
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-3">
                           {product.thumbnail ? (
@@ -236,7 +239,7 @@ const ProductsPage = () => {
                         </div>
                       </td>
                       <td className="px-5 py-3.5">
-                        <span className="text-slate-400 font-medium">{(product.category as any)?.name || product.category || "—"}</span>
+                        <span className="text-slate-400 font-medium">{typeof product.category === 'object' ? product.category.name : "—"}</span>
                       </td>
                       <td className="px-5 py-3.5">
                         <span className="text-teal-400 font-bold">${product.price?.toFixed(2) || "0.00"}</span>
@@ -276,7 +279,7 @@ const ProductsPage = () => {
                             <ShoppingCart size={16} />
                           </button>
                           <button
-                            onClick={() => (product as any)._id && handleDelete((product as any)._id)}
+                            onClick={() => product._id && handleDelete(product._id)}
                             disabled={isDeleting}
                             className="p-1.5 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-50"
                             title="Delete"
@@ -310,10 +313,10 @@ const ProductsPage = () => {
         product={orderingProduct}
       />
 
-      <ProductViewModal 
-        isOpen={isDetailModalOpen} 
-        onClose={handleCloseDetail} 
-        product={viewingProduct} 
+      <ProductViewModal
+        isOpen={isDetailModalOpen}
+        onClose={handleCloseDetail}
+        product={viewingProduct}
       />
     </div>
   );

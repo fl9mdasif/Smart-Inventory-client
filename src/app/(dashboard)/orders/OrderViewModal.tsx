@@ -1,7 +1,7 @@
 "use client";
 
 import { TOrder, TStatusHistoryEntry } from "@/types/common";
-import { X, ShoppingCart, User, MapPin, Phone, Calendar, Package, Info, CheckCircle2, Clock, Truck, PackageCheck, XSquare, Undo2 } from "lucide-react";
+import { X, ShoppingCart, User, MapPin, Phone, Calendar, Package, Info, CheckCircle2, Clock, Truck, PackageCheck, XSquare, Undo2, LucideIcon } from "lucide-react";
 
 interface OrderViewModalProps {
   isOpen: boolean;
@@ -9,7 +9,7 @@ interface OrderViewModalProps {
   order: TOrder | null;
 }
 
-const statusIcons: Record<string, any> = {
+const statusIcons: Record<string, LucideIcon> = {
   pending: Clock,
   confirmed: CheckCircle2,
   shipped: Truck,
@@ -30,8 +30,6 @@ const statusColors: Record<string, string> = {
 const OrderViewModal = ({ isOpen, onClose, order }: OrderViewModalProps) => {
   if (!isOpen || !order) return null;
 
-  const StatusIcon = statusIcons[order.orderStatus || "pending"];
-
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-md p-4 overflow-y-auto">
       <div className="w-full max-w-4xl rounded-2xl border border-white/[0.08] bg-[#0d1117] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200 my-auto">
@@ -44,7 +42,7 @@ const OrderViewModal = ({ isOpen, onClose, order }: OrderViewModalProps) => {
             <div>
               <h2 className="text-lg font-bold text-white leading-none">Order Details</h2>
               <p className="text-slate-500 text-xs mt-1 flex items-center gap-2">
-                Order ID: <span className="font-mono text-slate-300">#{(order as any)._id?.slice(-8).toUpperCase() || "N/A"}</span>
+                Order ID: <span className="font-mono text-slate-300">#{order._id?.slice(-8).toUpperCase() || "N/A"}</span>
               </p>
             </div>
           </div>
@@ -133,7 +131,7 @@ const OrderViewModal = ({ isOpen, onClose, order }: OrderViewModalProps) => {
                 {order.deliveredAt && (
                    <div className="flex items-center gap-1.5 text-emerald-500/70">
                    <PackageCheck size={12} />
-                   <span>DELIVERED: {new Date(order.deliveredAt as any).toLocaleString()}</span>
+                   <span>DELIVERED: {new Date(order.deliveredAt as unknown as string).toLocaleString()}</span>
                  </div>
                 )}
               </div>
@@ -178,7 +176,7 @@ const OrderViewModal = ({ isOpen, onClose, order }: OrderViewModalProps) => {
                           </div>
                           {entry.note ? (
                             <p className="text-xs text-slate-500 italic bg-white/[0.03] p-2 rounded-lg border border-white/[0.04] mt-1.5">
-                              "{entry.note}"
+                              &quot;{entry.note}&quot;
                             </p>
                           ) : (
                             <p className="text-[10px] text-slate-700 mt-1 italic">No note provided</p>

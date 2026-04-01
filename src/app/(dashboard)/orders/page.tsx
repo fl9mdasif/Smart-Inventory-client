@@ -14,7 +14,8 @@ import {
   PackageCheck,
   Search,
   Filter,
-  Eye
+  Eye,
+  type LucideIcon
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { TOrder, TOrderStatus } from "@/types/common";
@@ -35,7 +36,7 @@ const statusStyle: Record<string, string> = {
   returned: "bg-violet-500/10 text-violet-400 border-violet-500/20",
 };
 
-const statusIcons: Record<string, any> = {
+const statusIcons: Record<string, LucideIcon> = {
   pending: Clock,
   confirmed: CheckCircle2,
   shipped: Truck,
@@ -98,8 +99,9 @@ const OrdersPage = () => {
       toast.success(`Order marked as ${data.orderStatus}`);
       handleClose();
       refetch();
-    } catch (err: any) {
-      toast.error(err?.data?.message || err?.data || "Failed to update order status.");
+    } catch (err: unknown) {
+      const apiErr = err as { data?: { message?: string } };
+      toast.error(apiErr.data?.message || "Failed to update order status.");
     }
   };
 
@@ -109,8 +111,9 @@ const OrdersPage = () => {
       await deleteOrder(id).unwrap();
       toast.success("Order deleted.");
       refetch();
-    } catch (err: any) {
-      toast.error(err?.data?.message || err?.data || "Failed to delete order.");
+    } catch (err: unknown) {
+      const apiErr = err as { data?: { message?: string } };
+      toast.error(apiErr.data?.message || "Failed to delete order.");
     }
   };
 
@@ -200,9 +203,9 @@ const OrdersPage = () => {
                 {orders.map((order: TOrder) => {
                   const StatusIcon = statusIcons[order.orderStatus || "pending"];
                   return (
-                    <tr key={(order as any)._id} className="hover:bg-white/[0.02] transition-colors group">
+                    <tr key={order._id} className="hover:bg-white/[0.02] transition-colors group">
                       <td className="px-5 py-4 font-mono text-[10px] text-slate-500">
-                        #{(order as any)._id?.slice(-8).toUpperCase() || "ORD-001"}
+                        #{order._id?.slice(-8).toUpperCase() || "ORD-001"}
                       </td>
                       <td className="px-5 py-4">
                         <div className="space-y-1">
@@ -248,7 +251,7 @@ const OrdersPage = () => {
                             <Edit size={16} />
                           </button>
                           <button
-                            onClick={() => (order as any)._id && handleDelete((order as any)._id)}
+                            onClick={() => order._id && handleDelete(order._id)}
                             disabled={isDeleting}
                             className="p-1.5 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-50"
                             title="Delete"

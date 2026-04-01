@@ -43,8 +43,8 @@ const ProductFormModal = ({
   product,
   isLoading,
 }: ProductFormModalProps) => {
-  const { data: categories, isLoading: isLoadingCategories } = useGetAllCategoriesQuery({});
-  // const categories: 
+  const { data: categories = [], isLoading: isLoadingCategories } = useGetAllCategoriesQuery({});
+  
   const [formData, setFormData] = useState({
     name: "",
     slug: "",
@@ -65,7 +65,7 @@ const ProductFormModal = ({
           name: product.name || "",
           slug: product.slug || "",
           description: product.description || "",
-          category: (product.category as any)?._id || product.category || "",
+          category: typeof product.category === "object" ? (product.category?._id || "") : (product.category || ""),
           thumbnail: product.thumbnail || "",
           price: product.price || 0,
           stockQuantity: product.stockQuantity ?? 0,
@@ -75,27 +75,23 @@ const ProductFormModal = ({
       } else {
         setFormData((prev) => ({
           ...prev,
-          // Only set category if it was empty and we now have categories
           category: prev.category || categories[0]?._id || "",
         }));
       }
     }
-  }, [product, isOpen, categories]); // Use categories.length as dependency
+  }, [product, isOpen, categories]);
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
-
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => {
       const newData = { ...prev, [name]: value };
 
-      // Auto-generate slug from name if creating new product
       if (name === 'name' && !product) {
         newData.slug = value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
       }
 
-      // Update status based on stock if stock fields change
       if (name === 'stockQuantity' || name === 'minStockThreshold') {
         const stock = name === 'stockQuantity' ? Number(value) : prev.stockQuantity;
         const min = name === 'minStockThreshold' ? Number(value) : prev.minStockThreshold;
@@ -143,7 +139,6 @@ const ProductFormModal = ({
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 space-y-6 max-h-[85vh] overflow-y-auto">
-          {/* Thumbnail Upload */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="md:col-span-1">
               <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-2">

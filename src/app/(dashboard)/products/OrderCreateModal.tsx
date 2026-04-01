@@ -1,13 +1,13 @@
 "use client";
 
-import { TProduct, TOrder, TShippingAddress } from "@/types/common";
+import { TOrder, TProduct, TShippingAddress } from "@/types/common";
 import { useEffect, useState } from "react";
-import { X, Loader2, ShoppingCart, User, MapPin, Phone, Hash, Tag, AlertCircle } from "lucide-react";
+import { X, Loader2, ShoppingCart, User, MapPin, Hash } from "lucide-react";
 
 interface OrderCreateModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSave: (orderData: any) => void;
+  onSave: (orderData: TOrder) => void;
   product: TProduct | null;
   isLoading: boolean;
 }
@@ -49,9 +49,9 @@ const OrderCreateModal = ({
     e: React.ChangeEvent<HTMLInputElement>,
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ 
-      ...prev, 
-      [name]: name === 'quantity' || name === 'discount' ? Number(value) : value 
+    setFormData((prev) => ({
+      ...prev,
+      [name]: name === 'quantity' || name === 'discount' ? Number(value) : value
     }));
   };
 
@@ -60,8 +60,8 @@ const OrderCreateModal = ({
     if (!product || isLoading) return;
 
     if (formData.quantity > (product.stockQuantity || 0)) {
-        alert("Insufficient stock!");
-        return;
+      alert("Insufficient stock!");
+      return;
     }
 
     const shippingAddress: TShippingAddress = {
@@ -70,10 +70,10 @@ const OrderCreateModal = ({
       address: formData.address,
       city: formData.city,
       district: formData.district,
-    } as any;
+    };
 
     const orderData = {
-      productId: (product as any)._id,
+      productId: product._id,
       productName: product.name,
       customerName: formData.customerName,
       quantity: formData.quantity,
@@ -84,7 +84,7 @@ const OrderCreateModal = ({
       statusHistory: [{ status: 'pending', note: 'Order placed from dashboard', changedAt: new Date() }]
     };
 
-    onSave(orderData);
+    onSave(orderData as TOrder);
   };
 
   if (!isOpen || !product) return null;
@@ -112,76 +112,76 @@ const OrderCreateModal = ({
         <form onSubmit={handleSubmit} className="p-6 space-y-6 overflow-y-auto max-h-[80vh]">
           {/* Product Summary Card */}
           <div className="p-4 rounded-xl bg-white/[0.02] border border-white/[0.06] flex items-center justify-between gap-4">
-             <div className="flex items-center gap-3">
-                <div className="w-12 h-12 rounded-lg bg-teal-500/10 flex items-center justify-center border border-teal-500/20">
-                    <ShoppingCart size={20} className="text-teal-400" />
-                </div>
-                <div>
-                   <h3 className="font-medium text-slate-200">{product.name}</h3>
-                   <p className="text-xs text-slate-500">Unit Price: <span className="text-teal-400 font-bold">${product.price?.toFixed(2)}</span></p>
-                </div>
-             </div>
-             <div className="text-right">
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${isLowStock ? 'text-amber-400 border-amber-500/30 bg-amber-500/5' : 'text-slate-500 border-white/10'}`}>
-                    {product.stockQuantity} in stock
-                </span>
-             </div>
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-lg bg-teal-500/10 flex items-center justify-center border border-teal-500/20">
+                <ShoppingCart size={20} className="text-teal-400" />
+              </div>
+              <div>
+                <h3 className="font-medium text-slate-200">{product.name}</h3>
+                <p className="text-xs text-slate-500">Unit Price: <span className="text-teal-400 font-bold">${product.price?.toFixed(2)}</span></p>
+              </div>
+            </div>
+            <div className="text-right">
+              <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${isLowStock ? 'text-amber-400 border-amber-500/30 bg-amber-500/5' : 'text-slate-500 border-white/10'}`}>
+                {product.stockQuantity} in stock
+              </span>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-             {/* Customer Info */}
-             <div className="space-y-4">
-                <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
-                    <User size={12} /> Customer Information
-                </h4>
-                <div>
-                    <label className="block text-[10px] font-medium text-slate-600 mb-1">Full Name</label>
-                    <Input name="customerName" placeholder="John Doe" value={formData.customerName} onChange={handleInputChange} required disabled={isLoading} />
-                </div>
-                <div>
-                    <label className="block text-[10px] font-medium text-slate-600 mb-1">Phone Number</label>
-                    <Input name="phone" placeholder="+1..." value={formData.phone} onChange={handleInputChange} required disabled={isLoading} />
-                </div>
-             </div>
+            {/* Customer Info */}
+            <div className="space-y-4">
+              <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                <User size={12} /> Customer Information
+              </h4>
+              <div>
+                <label className="block text-[10px] font-medium text-slate-600 mb-1">Full Name</label>
+                <Input name="customerName" placeholder="John Doe" value={formData.customerName} onChange={handleInputChange} required disabled={isLoading} />
+              </div>
+              <div>
+                <label className="block text-[10px] font-medium text-slate-600 mb-1">Phone Number</label>
+                <Input name="phone" placeholder="+1..." value={formData.phone} onChange={handleInputChange} required disabled={isLoading} />
+              </div>
+            </div>
 
-             {/* Order Specs */}
-             <div className="space-y-4">
-                <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
-                    <Hash size={12} /> Order Details
-                </h4>
-                <div className="grid grid-cols-2 gap-3">
-                    <div>
-                        <label className="block text-[10px] font-medium text-slate-600 mb-1">Quantity</label>
-                        <Input type="number" name="quantity" min="1" max={product.stockQuantity} value={formData.quantity} onChange={handleInputChange} required disabled={isLoading} />
-                    </div>
-                    <div>
-                        <label className="block text-[10px] font-medium text-slate-600 mb-1">Discount ($)</label>
-                        <Input type="number" name="discount" min="0" value={formData.discount} onChange={handleInputChange} disabled={isLoading} />
-                    </div>
+            {/* Order Specs */}
+            <div className="space-y-4">
+              <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
+                <Hash size={12} /> Order Details
+              </h4>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[10px] font-medium text-slate-600 mb-1">Quantity</label>
+                  <Input type="number" name="quantity" min="1" max={product.stockQuantity} value={formData.quantity} onChange={handleInputChange} required disabled={isLoading} />
                 </div>
-             </div>
+                <div>
+                  <label className="block text-[10px] font-medium text-slate-600 mb-1">Discount ($)</label>
+                  <Input type="number" name="discount" min="0" value={formData.discount} onChange={handleInputChange} disabled={isLoading} />
+                </div>
+              </div>
+            </div>
           </div>
 
           {/* Shipping Info */}
           <div className="space-y-4 pt-2">
-             <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
-                <MapPin size={12} /> Shipping Address
-             </h4>
-             <Input name="address" placeholder="Street Address" value={formData.address} onChange={handleInputChange} required disabled={isLoading} />
-             <div className="grid grid-cols-2 gap-3">
-                <Input name="city" placeholder="City" value={formData.city} onChange={handleInputChange} required disabled={isLoading} />
-                <Input name="district" placeholder="District" value={formData.district} onChange={handleInputChange} required disabled={isLoading} />
-             </div>
+            <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-widest flex items-center gap-2">
+              <MapPin size={12} /> Shipping Address
+            </h4>
+            <Input name="address" placeholder="Street Address" value={formData.address} onChange={handleInputChange} required disabled={isLoading} />
+            <div className="grid grid-cols-2 gap-3">
+              <Input name="city" placeholder="City" value={formData.city} onChange={handleInputChange} required disabled={isLoading} />
+              <Input name="district" placeholder="District" value={formData.district} onChange={handleInputChange} required disabled={isLoading} />
+            </div>
           </div>
 
           {/* Subtotal Footer */}
           <div className="p-4 rounded-xl bg-teal-500/[0.03] border border-teal-500/10 flex items-center justify-between">
             <div className="text-xs text-slate-400">
-                Calculation: ({formData.quantity} × ${product.price}) - ${formData.discount}
+              Calculation: ({formData.quantity} × ${product.price}) - ${formData.discount}
             </div>
             <div className="text-right">
-                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Grand Total</p>
-                <p className="text-2xl font-bold text-teal-400">${subtotal.toFixed(2)}</p>
+              <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest">Grand Total</p>
+              <p className="text-2xl font-bold text-teal-400">${subtotal.toFixed(2)}</p>
             </div>
           </div>
 

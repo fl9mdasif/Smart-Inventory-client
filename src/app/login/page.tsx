@@ -58,10 +58,10 @@ export default function LoginPage() {
         setError(res?.message || "Invalid credentials. Please try again.");
         toast.error(res?.message || "Login failed.");
       }
-    } catch (err: any) {
-      // console.error(err.message);
-      setError("An unexpected error occurred. Please try again later.");
-      toast.error("An unexpected error occurred.");
+    } catch (err: unknown) {
+      const apiErr = err as { data?: { message?: string } };
+      setError(apiErr.data?.message || "An unexpected error occurred. Please try again later.");
+      toast.error(apiErr.data?.message || "Login failed.");
     } finally {
       setLoading(false);
     }

@@ -17,6 +17,7 @@ import { getUserInfo, removeUser } from "@/services/auth.services";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import { useGetAllProductsQuery } from "@/redux/api/productApi";
+import { TProduct } from "@/types";
 
 const navItems = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
@@ -52,7 +53,7 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
 
   const { data: productsData } = useGetAllProductsQuery({});
 
-  const lowStockProducts = productsData?.data?.filter((p: any) =>
+  const lowStockProducts = (productsData?.data as TProduct[])?.filter((p: TProduct) =>
     (p.stockQuantity ?? 0) <= (p.minStockThreshold ?? 5)
   ) || [];
 

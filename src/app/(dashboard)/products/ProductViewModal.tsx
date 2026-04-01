@@ -1,7 +1,7 @@
 "use client";
 
 import { TProduct } from "@/types/common";
-import { X, Package, Tag, BarChart3, Clock, Layout, FileText, Image as ImageIcon } from "lucide-react";
+import { X, Package, Tag, BarChart3, Clock, Layout, FileText, Image as ImageIcon, type LucideIcon } from "lucide-react";
 import Image from "next/image";
 
 interface ProductViewModalProps {
@@ -10,7 +10,7 @@ interface ProductViewModalProps {
   product: TProduct | null;
 }
 
-const DetailItem = ({ icon: Icon, label, value, colorClass = "text-slate-300" }: { icon: any, label: string, value: string | number, colorClass?: string }) => (
+const DetailItem = ({ icon: Icon, label, value, colorClass = "text-slate-300" }: { icon: LucideIcon, label: string, value: string | number, colorClass?: string }) => (
   <div className="flex items-start gap-3 p-3 rounded-xl bg-white/[0.02] border border-white/[0.04]">
     <div className="p-2 rounded-lg bg-white/[0.04] text-slate-500">
       <Icon size={16} />
@@ -73,7 +73,7 @@ const ProductViewModal = ({ isOpen, onClose, product }: ProductViewModalProps) =
                     <p className="text-xs mt-2">No preview available</p>
                   </div>
                 )}
-                
+
                 <div className={`absolute top-3 right-3 px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider border backdrop-blur-md ${statusColors[product.status || "active"]}`}>
                   {(product.status || "active").replace("_", " ")}
                 </div>
@@ -87,7 +87,7 @@ const ProductViewModal = ({ isOpen, onClose, product }: ProductViewModalProps) =
                   </span>
                 </div>
                 <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-                  <div 
+                  <div
                     className="h-full bg-teal-500 transition-all duration-1000 ease-out"
                     style={{ width: `${Math.min(100, stockPercentage)}%` }}
                   />
@@ -103,7 +103,7 @@ const ProductViewModal = ({ isOpen, onClose, product }: ProductViewModalProps) =
               </div>
 
               <div className="grid grid-cols-2 gap-3">
-                <DetailItem icon={Tag} label="Category" value={(product.category as any)?.name || "Uncategorized"} />
+                <DetailItem icon={Tag} label="Category" value={typeof product.category === 'object' ? product.category.name : "Uncategorized"} />
                 <DetailItem icon={BarChart3} label="Price" value={`৳${(product.price || 0).toLocaleString()}`} colorClass="text-teal-400 font-bold" />
                 <DetailItem icon={Layout} label="Stock" value={`${product.stockQuantity || 0} units`} />
                 <DetailItem icon={Clock} label="Min. Threshold" value={`${product.minStockThreshold || 0} units`} />
@@ -120,10 +120,10 @@ const ProductViewModal = ({ isOpen, onClose, product }: ProductViewModalProps) =
                   </p>
                 </div>
               </div>
-              
+
               <div className="pt-4 flex items-center justify-between text-[10px] text-slate-600 border-t border-white/[0.04]">
                 <span>LAST UPDATED: {product.updatedAt ? new Date(product.updatedAt).toLocaleString() : "Never"}</span>
-                <span>ID: {(product as any)._id || "N/A"}</span>
+                <span>ID: {product._id || "N/A"}</span>
               </div>
             </div>
           </div>

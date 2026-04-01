@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { PlusCircle, Loader2, Layers, Edit, Trash2, CheckCircle, XCircle } from "lucide-react";
+import { PlusCircle, Loader2, Layers, Edit, Trash2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { TCategory } from "@/types/common";
 import {
@@ -47,8 +47,9 @@ const CategoriesPage = () => {
             }
             handleClose();
             refetch();
-        } catch (err: any) {
-            toast.error(err?.data?.message || err?.data || "Failed to save category.");
+        } catch (err: unknown) {
+            const apiErr = err as { data?: { message?: string } };
+            toast.error(apiErr.data?.message || "Failed to save category.");
         }
     };
 
@@ -58,8 +59,9 @@ const CategoriesPage = () => {
             await deleteCategory(id).unwrap();
             toast.success("Category deleted.");
             refetch();
-        } catch (err: any) {
-            toast.error(err?.data?.message || err?.data || "Failed to delete category.");
+        } catch (err: unknown) {
+            const apiErr = err as { data?: { message?: string } };
+            toast.error(apiErr.data?.message || "Failed to delete category.");
         }
     };
 
@@ -104,8 +106,8 @@ const CategoriesPage = () => {
                         <div className="mx-auto w-12 h-12 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center mb-4">
                             <Layers className="w-6 h-6 text-teal-400" />
                         </div>
-                        <p className="text-slate-300 font-medium">No categories yet</p>
-                        <p className="text-slate-500 text-sm mt-1">Click "Add Category" to get started.</p>
+                        <p className="text-slate-400 font-medium whitespace-pre-wrap">No categories found.</p>
+                        <p className="text-xs text-slate-500 mt-1">Click the Add Category button to get started.</p>
                     </div>
                 ) : (
                     <div className="overflow-x-auto">
@@ -147,18 +149,18 @@ const CategoriesPage = () => {
                                             <div className="flex justify-center gap-2">
                                                 <button
                                                     onClick={() => handleOpenEdit(category)}
-                                                    className="p-1.5 rounded-lg text-slate-500 hover:text-teal-400 hover:bg-teal-500/10 transition-colors"
-                                                    title="Edit"
+                                                    className="p-1.5 rounded-lg bg-teal-500/10 text-teal-400 hover:bg-teal-500/20 transition-all"
+                                                    title="Edit Category"
                                                 >
-                                                    <Edit size={16} />
+                                                    <Edit size={14} />
                                                 </button>
                                                 <button
                                                     onClick={() => category._id && handleDelete(category._id)}
                                                     disabled={isDeleting}
-                                                    className="p-1.5 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-50"
-                                                    title="Delete"
+                                                    className="p-1.5 rounded-lg bg-rose-500/10 text-rose-400 hover:bg-rose-500/20 transition-all disabled:opacity-50"
+                                                    title="Delete Category"
                                                 >
-                                                    <Trash2 size={16} />
+                                                    <Trash2 size={14} />
                                                 </button>
                                             </div>
                                         </td>

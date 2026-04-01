@@ -47,7 +47,9 @@ const OrderUpdateModal = ({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!order || isLoading) return;
-    onSave((order as any)._id, { orderStatus: status, note });
+    if (order._id) {
+      onSave(order._id, { orderStatus: status, note });
+    }
   };
 
   if (!isOpen || !order) return null;

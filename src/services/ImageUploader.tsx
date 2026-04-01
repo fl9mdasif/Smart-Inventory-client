@@ -122,10 +122,10 @@ export const ImageUploader = ({
       } else {
         throw new Error("Upload failed");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Upload error:", error);
       toast.error(
-        error.response?.data?.error?.message || "Failed to upload image.",
+        "Failed to upload image.",
       );
     } finally {
       setIsUploading(false);

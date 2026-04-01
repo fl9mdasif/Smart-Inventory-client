@@ -1,8 +1,7 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-// import { USER_ROLE } from "@/contains/role";
-
-export type ResponseSuccessType = {
-  data: any;
+export type TApiResponse<T> = {
+  data: T;
+  message?: string;
+  success?: boolean;
   meta?: TMeta;
 };
 
@@ -13,15 +12,26 @@ export type TMeta = {
   // totalPage: number;
 };
 
-export type IGenericErrorResponse = {
-  statusCode: number;
-  message: string;
-  errorMessages: IGenericErrorMessage[];
-};
+export type ResponseSuccessType = {
+  data: unknown;
+  meta?: TMeta;
+}
 
 export type IGenericErrorMessage = {
-  path: string | number;
-  message: string;
+  path?: string | number;
+  message?: string;
+  statusCode?: number;
+  errorMessages?: string
+};
+
+export type TApiError = {
+  status?: number | string;
+  data?: {
+    message?: string;
+    errorMessages?: IGenericErrorMessage[];
+    stack?: string;
+  } | string;
+  message?: string;
 };
 
 
@@ -39,10 +49,11 @@ export interface TCategory {
 export type TProductStatus = 'active' | 'out_of_stock' | 'low_stock';
 
 export interface TProduct {
+  _id?: string;
   name: string;
   slug: string;
   description: string;
-  category: string;
+  category: string | TCategory;
   thumbnail: string;
   price: number;
   status?: TProductStatus;
@@ -83,6 +94,7 @@ export interface TStatusHistoryEntry {
 
 // ── Main Order Interface ───────────────────────────────────────────────────────
 export interface TOrder {
+  _id?: string;
   // user: Types.ObjectId;
   productId: string;
   customerName: string;
@@ -100,4 +112,17 @@ export interface TOrder {
   cancelReason?: string;
   createdAt?: string;
   updatedAt?: string;
+}
+
+export interface TActivity {
+  _id: string;
+  action: string;
+  details: string;
+  performedBy: string;
+  createdAt: string;
+}
+
+export interface TChartDataItem {
+  name: string;
+  revenue: number;
 }

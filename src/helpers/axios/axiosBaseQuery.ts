@@ -1,7 +1,7 @@
 import type { BaseQueryFn } from "@reduxjs/toolkit/query";
-import type { AxiosRequestConfig, AxiosError } from "axios";
+import { AxiosRequestConfig, AxiosError } from "axios";
 import { instance as axiosInstance } from "./axiosInstance";
-import { TMeta } from "@/types";
+import { TMeta, TApiError } from "@/types/common";
 
 export const axiosBaseQuery =
   (
@@ -19,25 +19,26 @@ export const axiosBaseQuery =
     unknown,
     unknown
   > =>
-  async ({ url, method, data, params,  contentType }) => {
-    try {
-      const result = await axiosInstance({
-        url: baseUrl + url,
-        method,
-        data,
-        params,
-        headers: {
-          "Content-Type": contentType || "application/json",
-        },
-      });
-      return result;
-    } catch (axiosError) {
-      const err = axiosError as any;
-      return {
-        error: {
-          status: err.statusCode || err.response?.status,
-          data: err.message || err.response?.data || err.statusText,
-        },
-      };
-    }
-  };
+    async ({ url, method, data, params, contentType }) => {
+      try {
+        const result = await axiosInstance({
+          url: baseUrl + url,
+          method,
+          data,
+          params,
+          headers: {
+            "Content-Type": contentType || "application/json",
+          },
+        });
+        return result;
+      } catch (axiosError) {
+        const error = axiosError as AxiosError;
+        const err = (error.response?.data as TApiError) || error;
+        return {
+          error: {
+            status: error.response?.status || 500,
+            data: err.message || error.message || "An unexpected error occurred",
+          },
+        };
+      }
+    };
