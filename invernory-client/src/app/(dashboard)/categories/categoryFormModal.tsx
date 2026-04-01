@@ -48,7 +48,7 @@ const CategoryFormModal = ({
       if (category) {
         setFormData({
           name: category.name,
-          slug: category.name.toLowerCase().replace(/\s+/g, "-"),
+          slug: category.name.toLowerCase(),
           description: category.description || "",
           thumbnail: category.thumbnail || "",
           isActive: category.isActive ?? true,
@@ -70,7 +70,18 @@ const CategoryFormModal = ({
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((prev) => {
+      const next = { ...prev, [name]: value };
+      if (name === "name" && !category) {
+        next.slug = value
+          .toLowerCase()
+          .trim()
+          .replace(/[^\w\s-]/g, "")
+          .replace(/[\s_-]+/g, "-")
+          .replace(/^-+|-+$/g, "");
+      }
+      return next;
+    });
   };
 
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -87,6 +98,7 @@ const CategoryFormModal = ({
 
     const categoryData: TCategory = {
       name: formData.name,
+      slug: formData.slug || formData.name.toLowerCase().replace(/\s+/g, "-"),
       description: formData.description,
       thumbnail: formData.thumbnail,
       isActive: formData.isActive,

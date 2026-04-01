@@ -1,10 +1,11 @@
+import { TOrder } from "@/types";
 import { tagTypes } from "../tag-types";
 import { baseApi } from "./baseApi";
 
 const orderApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
     createOrder: build.mutation({
-      query: (data) => ({
+      query: (data: TOrder) => ({
         url: "/orders",
         method: "POST",
         data,

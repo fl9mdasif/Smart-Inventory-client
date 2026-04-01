@@ -43,9 +43,8 @@ const ProductFormModal = ({
   product,
   isLoading,
 }: ProductFormModalProps) => {
-  const { data: categoriesData } = useGetAllCategoriesQuery({});
-  const categories: TCategory[] = categoriesData?.data ?? [];
-
+  const { data: categories, isLoading: isLoadingCategories } = useGetAllCategoriesQuery({});
+  // const categories: 
   const [formData, setFormData] = useState({
     name: "",
     slug: "",
@@ -57,13 +56,14 @@ const ProductFormModal = ({
     status: "active" as "active" | "out_of_stock" | "low_stock",
   });
 
+  // Handle Initial Data Loading
   useEffect(() => {
     if (isOpen) {
       if (product) {
         setFormData({
-          name: product.name,
+          name: product.name || "",
           slug: product.slug || "",
-          description: product.description,
+          description: product.description || "",
           category: (product.category as any)?._id || product.category || "",
           thumbnail: product.thumbnail || "",
           stockQuantity: product.stockQuantity ?? 0,
@@ -71,27 +71,23 @@ const ProductFormModal = ({
           status: product.status || "active",
         });
       } else {
-        setFormData({
-          name: "",
-          slug: "",
-          description: "",
-          category: categories[0]?._id || "",
-          thumbnail: "",
-          stockQuantity: 0,
-          minStockThreshold: 5,
-          status: "active",
-        });
+        setFormData((prev) => ({
+          ...prev,
+          // Only set category if it was empty and we now have categories
+          category: prev.category || categories[0]?._id || "",
+        }));
       }
     }
-  }, [product, isOpen, categories]);
+  }, [product, isOpen, categories]); // Use categories.length as dependency
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>,
+
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => {
       const newData = { ...prev, [name]: value };
-      
+
       // Auto-generate slug from name if creating new product
       if (name === 'name' && !product) {
         newData.slug = value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)+/g, '');
@@ -219,12 +215,14 @@ const ProductFormModal = ({
                     onChange={handleInputChange}
                     className="pl-9"
                     required
-                    disabled={isLoading}
+                    disabled={isLoading || isLoadingCategories}
                   >
-                    <option value="" disabled>Select Category</option>
-                    {categories.map((cat) => (
+                    <option value="" disabled>
+                      {isLoadingCategories ? "Loading categories..." : "Select Category"}
+                    </option>
+                    {categories.map((cat: TCategory) => (
                       <option key={cat._id} value={cat._id}>
-                        {cat.name}
+                        {cat.name} {!cat.isActive && "(Inactive)"}
                       </option>
                     ))}
                   </Select>
