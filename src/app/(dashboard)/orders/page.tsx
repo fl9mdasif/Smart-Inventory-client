@@ -13,7 +13,8 @@ import {
   Undo2,
   PackageCheck,
   Search,
-  Filter
+  Filter,
+  Eye
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { TOrder, TOrderStatus } from "@/types/common";
@@ -23,6 +24,7 @@ import {
   useDeleteOrderMutation,
 } from "@/redux/api/orderApi";
 import OrderUpdateModal from "./OrderUpdateModal";
+import OrderViewModal from "./OrderViewModal";
 
 const statusStyle: Record<string, string> = {
   pending: "bg-slate-500/10 text-slate-400 border-slate-500/20",
@@ -49,7 +51,9 @@ const OrdersPage = () => {
   const [selectedStatus, setSelectedStatus] = useState("");
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isViewModalOpen, setIsViewModalOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<TOrder | null>(null);
+  const [viewingOrder, setViewingOrder] = useState<TOrder | null>(null);
 
   // Debouncing logic
   useEffect(() => {
@@ -73,9 +77,19 @@ const OrdersPage = () => {
     setIsModalOpen(true);
   };
 
+  const handleOpenView = (order: TOrder) => {
+    setViewingOrder(order);
+    setIsViewModalOpen(true);
+  };
+
   const handleClose = () => {
     setIsModalOpen(false);
     setSelectedOrder(null);
+  };
+
+  const handleCloseView = () => {
+    setIsViewModalOpen(false);
+    setViewingOrder(null);
   };
 
   const handleUpdateStatus = async (id: string, data: { orderStatus: TOrderStatus; note?: string }) => {
@@ -214,14 +228,21 @@ const OrdersPage = () => {
                       </td>
                       <td className="px-5 py-4 text-center">
                         <span className="text-teal-400 font-bold">
-                          ৳{order.subtotal?.toLocaleString() || "0"}
+                          ৳{order.totalAmount?.toLocaleString() || "0"}
                         </span>
                       </td>
                       <td className="px-5 py-4">
                         <div className="flex justify-center gap-2">
                           <button
-                            onClick={() => handleOpenUpdate(order)}
+                            onClick={() => handleOpenView(order)}
                             className="p-1.5 rounded-lg text-slate-500 hover:text-teal-400 hover:bg-teal-500/10 transition-colors"
+                            title="View Details"
+                          >
+                            <Eye size={16} />
+                          </button>
+                          <button
+                            onClick={() => handleOpenUpdate(order)}
+                            className="p-1.5 rounded-lg text-slate-500 hover:text-blue-400 hover:bg-blue-500/10 transition-colors"
                             title="Update Status"
                           >
                             <Edit size={16} />
@@ -251,6 +272,12 @@ const OrdersPage = () => {
         onSave={handleUpdateStatus}
         order={selectedOrder}
         isLoading={isUpdating}
+      />
+
+      <OrderViewModal 
+        isOpen={isViewModalOpen}
+        onClose={handleCloseView}
+        order={viewingOrder}
       />
     </div>
   );

@@ -2,12 +2,12 @@
 
 import { useGetAllOrdersQuery } from "@/redux/api/orderApi";
 import { useGetAllProductsQuery } from "@/redux/api/productApi";
-import { 
-  Package, 
-  ShoppingCart, 
-  AlertTriangle, 
-  XCircle, 
-  ArrowUpRight, 
+import {
+  Package,
+  ShoppingCart,
+  AlertTriangle,
+  XCircle,
+  ArrowUpRight,
   TrendingUp,
   PlusCircle,
   ClipboardList,
@@ -88,17 +88,33 @@ const DashboardPage = () => {
   const { data: ordersData } = useGetAllOrdersQuery({});
 
   const totalProducts = productsData?.data?.length || 0;
-  const totalOrders = ordersData?.data?.length || 0;
-  
+  // const totalProducts = productsData?.data?.length || 0;
+
+  const pendingOrders = ordersData?.data?.filter((o: any) => o.orderStatus === 'pending' || o.orderStatus === 'confirmed') || [];
+  const completedOrders = ordersData?.data?.filter((o: any) => o.orderStatus === 'delivered') || [];
+
   // Filtering for low stock and out of stock
   // Assuming the API returns products with stockQuantity and minStockThreshold
-  const lowStockProducts = productsData?.data?.filter((p: any) => 
+  const lowStockProducts = productsData?.data?.filter((p: any) =>
     (p.stockQuantity ?? 0) > 0 && (p.stockQuantity ?? 0) <= (p.minStockThreshold ?? 5)
   ).length || 0;
 
-  const outOfStockProducts = productsData?.data?.filter((p: any) => 
+  const outOfStockProducts = productsData?.data?.filter((p: any) =>
     (p.stockQuantity ?? 0) === 0
   ).length || 0;
+
+  // --- Revenue Calculations ---
+  const deliveredOrders = ordersData?.data?.filter((o: any) => o.orderStatus === 'delivered') || [];
+
+  const totalRevenue = deliveredOrders.reduce((sum: number, order: any) => sum + (order.totalAmount || 0), 0);
+
+  const today = new Date().toISOString().split('T')[0];
+  const revenueToday = deliveredOrders
+    .filter((o: any) => {
+      const deliveredDate = o.deliveredAt ? new Date(o.deliveredAt).toISOString().split('T')[0] : "";
+      return deliveredDate === today;
+    })
+    .reduce((sum: number, order: any) => sum + (order.totalAmount || 0), 0);
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
@@ -127,7 +143,7 @@ const DashboardPage = () => {
           <BarChart3 className="w-3 h-3" />
           Key Metrics
         </p>
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
           <StatCard
             title="Total Products"
             value={totalProducts}
@@ -138,18 +154,43 @@ const DashboardPage = () => {
           />
           <StatCard
             title="Pending Orders"
-            value={totalOrders}
+            value={pendingOrders.length}
             icon={<ShoppingCart className="w-5 h-5 text-violet-400" />}
             accent="bg-violet-500"
             href="/orders"
-            trend="Ready for dispatch"
+            trend="Needs processing"
+          />
+          <StatCard
+            title="Completed Orders"
+            value={completedOrders.length}
+            icon={<Package className="w-5 h-5 text-teal-400" />}
+            accent="bg-teal-500"
+            href="/orders"
+            trend="Successfully delivered"
+          />
+          <StatCard
+            title="Total Revenue"
+            value={`৳${totalRevenue.toLocaleString()}`}
+            icon={<TrendingUp className="w-5 h-5 text-emerald-400" />}
+            accent="bg-emerald-500"
+            href="/dashboard"
+            trend="Overall sales"
+          />
+          <StatCard
+            title="Revenue Today"
+            value={`৳${revenueToday.toLocaleString()}`}
+            icon={<TrendingUp className="w-5 h-5 text-emerald-400" />}
+            accent="bg-emerald-500"
+            href="/dashboard"
+            trend="Delivered today"
+            trendColor={revenueToday > 0 ? "text-emerald-400" : "text-slate-500"}
           />
           <StatCard
             title="Low Stock"
             value={lowStockProducts}
             icon={<AlertTriangle className="w-5 h-5 text-amber-400" />}
             accent="bg-amber-500"
-            href="/products?filter=low_stock"
+            href="/products"
             trend={lowStockProducts > 0 ? "Requires restock" : "Inventory healthy"}
             trendColor={lowStockProducts > 0 ? "text-amber-400" : "text-emerald-400"}
           />
@@ -158,7 +199,7 @@ const DashboardPage = () => {
             value={outOfStockProducts}
             icon={<XCircle className="w-5 h-5 text-rose-400" />}
             accent="bg-rose-500"
-            href="/products?filter=out_of_stock"
+            href="/products"
             trend={outOfStockProducts > 0 ? "Revenue loss risk" : "Full availability"}
             trendColor={outOfStockProducts > 0 ? "text-rose-400" : "text-emerald-400"}
           />

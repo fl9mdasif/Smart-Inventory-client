@@ -49,6 +49,8 @@ export interface TProduct {
   stockQuantity?: number;
   minStockThreshold?: number;
   restockIgnored?: boolean;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 
@@ -89,12 +91,13 @@ export interface TOrder {
   quantity: number;
   shippingAddress: TShippingAddress;
   subtotal: number;
+  totalAmount: number;
   statusHistory: TStatusHistoryEntry[];
   discount?: number;
   orderStatus?: TOrderStatus;
   deliveredAt?: Date;
   cancelledAt?: Date;
   cancelReason?: string;
-
-
+  createdAt?: string;
+  updatedAt?: string;
 }

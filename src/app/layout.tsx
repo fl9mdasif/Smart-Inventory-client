@@ -9,13 +9,13 @@ import { Toaster } from "react-hot-toast";
 import { ReduxProvider } from "@/redux/reduxProvider";
 import { cn } from "@/lib/utils";
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
+const geist = Geist({ subsets: ['latin'], variable: '--font-sans' });
 
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Portfolio Dashboard",
-  description: "Manage your personal portfolio content.",
+  title: "Inventory Management Dashboard",
+  description: "Manage your inventory and orders Smartly.",
 };
 
 export default function RootLayout({

@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { PlusCircle, Loader2, Package, Edit, Trash2, ShoppingCart, Search, Filter, X } from "lucide-react";
+import { PlusCircle, Loader2, Package, Edit, Trash2, ShoppingCart, Search, Filter, X, Eye } from "lucide-react";
 import toast from "react-hot-toast";
 import { TProduct, TOrder, TCategory } from "@/types/common";
 import ProductFormModal from "./ProductFormModal";
 import OrderCreateModal from "./OrderCreateModal";
+import ProductViewModal from "./ProductViewModal";
 import {
   useGetAllProductsQuery,
   useCreateProductMutation,
@@ -31,8 +32,10 @@ const ProductsPage = () => {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
+  const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<TProduct | null>(null);
   const [orderingProduct, setOrderingProduct] = useState<TProduct | null>(null);
+  const [viewingProduct, setViewingProduct] = useState<TProduct | null>(null);
 
   // Debouncing logic
   useEffect(() => {
@@ -42,7 +45,7 @@ const ProductsPage = () => {
 
   // Fetch Categories for filter
   const { data: categoriesData } = useGetAllCategoriesQuery({});
-  const categories: TCategory[] = categoriesData?.data ?? [];
+  const categories: TCategory[] = Array.isArray(categoriesData) ? categoriesData : (categoriesData as any)?.data ?? [];
 
   // Prepare Query Params
   const queryParams: Record<string, unknown> = {};
@@ -59,11 +62,13 @@ const ProductsPage = () => {
   const [createOrder, { isLoading: isPlacingOrder }] = useCreateOrderMutation();
 
   const handleOpenCreate = () => { setEditingProduct(null); setIsModalOpen(true); };
+  const handleOpenDetail = (product: TProduct) => { setViewingProduct(product); setIsDetailModalOpen(true); };
   const handleOpenEdit = (product: TProduct) => { setEditingProduct(product); setIsModalOpen(true); };
   const handleOpenOrder = (product: TProduct) => { setOrderingProduct(product); setIsOrderModalOpen(true); };
 
   const handleClose = () => { setIsModalOpen(false); setEditingProduct(null); };
   const handleCloseOrder = () => { setIsOrderModalOpen(false); setOrderingProduct(null); };
+  const handleCloseDetail = () => { setIsDetailModalOpen(false); setViewingProduct(null); };
 
   const handleSave = async (data: Partial<TProduct>) => {
     const payload = { ...data };
@@ -247,18 +252,35 @@ const ProductsPage = () => {
                           {status.replace('_', ' ')}
                         </span>
                       </td>
-                      <td className="px-5 py-3.5">
+                      <td className="px-5 py-4 text-center">
                         <div className="flex justify-center gap-2">
-                          <button onClick={() => handleOpenOrder(product)} disabled={isOutOfStock}
-                            className="p-1.5 rounded-lg text-teal-500 hover:text-white hover:bg-teal-600 transition-colors disabled:opacity-30 disabled:hover:bg-transparent" title="Place Order">
-                            <ShoppingCart size={16} />
+                          <button
+                            onClick={() => handleOpenDetail(product)}
+                            className="p-1.5 rounded-lg text-slate-500 hover:text-teal-400 hover:bg-teal-500/10 transition-colors"
+                            title="View Details"
+                          >
+                            <Eye size={16} />
                           </button>
-                          <button onClick={() => handleOpenEdit(product)}
-                            className="p-1.5 rounded-lg text-slate-500 hover:text-blue-400 hover:bg-blue-500/10 transition-colors" title="Edit">
+                          <button
+                            onClick={() => handleOpenEdit(product)}
+                            className="p-1.5 rounded-lg text-slate-500 hover:text-amber-400 hover:bg-amber-500/10 transition-colors"
+                            title="Edit"
+                          >
                             <Edit size={16} />
                           </button>
-                          <button onClick={() => (product as any)._id && handleDelete((product as any)._id)} disabled={isDeleting}
-                            className="p-1.5 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-50" title="Delete">
+                          <button
+                            onClick={() => handleOpenOrder(product)}
+                            className="p-1.5 rounded-lg text-slate-500 hover:text-emerald-400 hover:bg-emerald-500/10 transition-colors"
+                            title="Place Order"
+                          >
+                            <ShoppingCart size={16} />
+                          </button>
+                          <button
+                            onClick={() => (product as any)._id && handleDelete((product as any)._id)}
+                            disabled={isDeleting}
+                            className="p-1.5 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/10 transition-colors disabled:opacity-50"
+                            title="Delete"
+                          >
                             <Trash2 size={16} />
                           </button>
                         </div>
@@ -286,6 +308,12 @@ const ProductsPage = () => {
         onClose={handleCloseOrder}
         onSave={handlePlaceOrder}
         product={orderingProduct}
+      />
+
+      <ProductViewModal 
+        isOpen={isDetailModalOpen} 
+        onClose={handleCloseDetail} 
+        product={viewingProduct} 
       />
     </div>
   );
