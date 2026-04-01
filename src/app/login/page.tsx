@@ -59,7 +59,7 @@ export default function LoginPage() {
         toast.error(res?.message || "Login failed.");
       }
     } catch (err: any) {
-      console.error(err.message);
+      // console.error(err.message);
       setError("An unexpected error occurred. Please try again later.");
       toast.error("An unexpected error occurred.");
     } finally {

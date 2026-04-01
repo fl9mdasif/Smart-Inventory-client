@@ -9,6 +9,7 @@ import {
   Settings,
   LogOut,
   ChevronRight,
+  X,
 } from "lucide-react";
 import { logoutUser } from "@/services/actions/logoutUser";
 import { getUserInfo, removeUser } from "@/services/auth.services";
@@ -23,7 +24,12 @@ const navItems = [
   { name: "Settings", href: "/settings", icon: Settings },
 ];
 
-const Sidebar = () => {
+interface SidebarProps {
+  isOpen?: boolean;
+  onClose?: () => void;
+}
+
+const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
   const pathname = usePathname();
   const router = useRouter();
   const [mounted, setMounted] = useState(false);
@@ -41,10 +47,10 @@ const Sidebar = () => {
     router.refresh();
   };
 
-  return (
-    <aside className="w-64 flex-shrink-0 h-screen flex flex-col bg-[#0d1117] border-r border-white/[0.06] sticky top-0">
+  const SidebarContent = () => (
+    <>
       {/* brand */}
-      <div className="px-5 py-6 border-b border-white/[0.06]">
+      <div className="px-5 py-6 border-b border-white/[0.06] flex items-center justify-between lg:block">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-teal-400 to-cyan-600 flex items-center justify-center flex-shrink-0 shadow-lg shadow-teal-500/20">
             <span className="text-white font-bold text-sm">A</span>
@@ -54,6 +60,14 @@ const Sidebar = () => {
             <p className="text-slate-500 text-[10px] mt-1 font-medium uppercase tracking-wider">Inventory Manager</p>
           </div>
         </div>
+        
+        {/* Mobile Close Button */}
+        <button 
+          onClick={onClose}
+          className="lg:hidden p-2 rounded-xl text-slate-500 hover:text-white transition-colors"
+        >
+          <X size={20} />
+        </button>
       </div>
 
       {/* nav */}
@@ -68,6 +82,7 @@ const Sidebar = () => {
               <li key={item.name}>
                 <Link
                   href={item.href}
+                  onClick={() => onClose?.()}
                   className={`group flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
                     isActive
                       ? "bg-teal-500/10 text-teal-400 border border-teal-500/20"
@@ -112,7 +127,18 @@ const Sidebar = () => {
           </div>
         )}
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      <aside className={`
+        fixed inset-y-0 left-0 z-50 w-64 bg-[#0d1117] border-r border-white/[0.06] flex flex-col transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:h-screen lg:flex-shrink-0
+        ${isOpen ? "translate-x-0" : "-translate-x-full"}
+      `}>
+        <SidebarContent />
+      </aside>
+    </>
   );
 };
 
