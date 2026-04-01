@@ -117,7 +117,7 @@ export interface TOrder {
 export interface TActivity {
   _id: string;
   action: string;
-  details: string;
+  message: string;
   performedBy: string;
   createdAt: string;
 }

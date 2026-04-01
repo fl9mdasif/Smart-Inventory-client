@@ -6,11 +6,11 @@ import {
   Package,
   ShoppingCart,
   Layers,
-  Settings,
   LogOut,
   ChevronRight,
   X,
   AlertTriangle,
+  // Settings,
 } from "lucide-react";
 import { logoutUser } from "@/services/actions/logoutUser";
 import { getUserInfo, removeUser } from "@/services/auth.services";
@@ -25,7 +25,7 @@ const navItems = [
   { name: "Orders", href: "/orders", icon: ShoppingCart },
   { name: "Categories", href: "/categories", icon: Layers },
   { name: "Restock Queue", href: "/restock-queue", icon: AlertTriangle, isRestock: true },
-  { name: "Settings", href: "/settings", icon: Settings },
+  // { name: "Settings", href: "/settings", icon: Settings },
 ];
 
 interface SidebarProps {

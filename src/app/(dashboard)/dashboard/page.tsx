@@ -102,6 +102,8 @@ const QuickActionCard = ({
 );
 
 const ActivityItem = ({ activity }: { activity: TActivity }) => {
+
+  // console.log('activity', activity);
   const Icon = activity.action === 'order' ? ShoppingCart : Package;
   const colorClass = activity.action === 'order' ? 'text-violet-400' : 'text-teal-400';
   const bgColorClass = activity.action === 'order' ? 'bg-violet-500/10' : 'bg-teal-500/10';
@@ -118,7 +120,7 @@ const ActivityItem = ({ activity }: { activity: TActivity }) => {
       </div>
       <div className="flex-1 min-w-0">
         <p className="text-slate-300 text-sm leading-snug">
-          {activity.details}
+          {activity.message}
         </p>
         <div className="flex items-center gap-2 mt-1">
           <Clock size={10} className="text-slate-500" />
@@ -138,6 +140,8 @@ const DashboardPage = () => {
     data: TActivity[];
     isLoading: boolean;
   };
+
+  // console.log(activitiesData);
 
   const totalProducts = (productsData?.data as TProduct[])?.length || 0;
 
