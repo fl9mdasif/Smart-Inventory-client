@@ -14,16 +14,17 @@ const orderApi = baseApi.injectEndpoints({
     }),
 
     getAllOrders: build.query({
-      query: () => ({
+      query: (params: Record<string, unknown>) => ({
         url: "/orders",
         method: "GET",
+        params,
       }),
       providesTags: [tagTypes.orders],
     }),
 
     updateOrder: build.mutation({
       query: ({ id, data }) => ({
-        url: `/orders/${id}`,
+        url: `/orders/${id}/status`,
         method: "PATCH",
         data,
       }),

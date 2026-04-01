@@ -44,6 +44,7 @@ export interface TProduct {
   description: string;
   category: string;
   thumbnail: string;
+  price: number;
   status?: TProductStatus;
   stockQuantity?: number;
   minStockThreshold?: number;
@@ -84,6 +85,7 @@ export interface TOrder {
   productId: string;
   customerName: string;
   productName: string;
+  price: number;
   quantity: number;
   shippingAddress: TShippingAddress;
   subtotal: number;

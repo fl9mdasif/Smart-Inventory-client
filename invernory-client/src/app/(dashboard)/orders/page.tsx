@@ -1,17 +1,19 @@
 "use client";
 
-import { useState } from "react";
-import { 
-  ShoppingCart, 
-  Loader2, 
-  Edit, 
-  Trash2, 
-  Clock, 
-  CheckCircle2, 
-  Truck, 
-  XSquare, 
+import { useState, useEffect } from "react";
+import {
+  ShoppingCart,
+  Loader2,
+  Edit,
+  Trash2,
+  Clock,
+  CheckCircle2,
+  Truck,
+  XSquare,
   Undo2,
-  PackageCheck
+  PackageCheck,
+  Search,
+  Filter
 } from "lucide-react";
 import toast from "react-hot-toast";
 import { TOrder, TOrderStatus } from "@/types/common";
@@ -41,10 +43,26 @@ const statusIcons: Record<string, any> = {
 };
 
 const OrdersPage = () => {
+  // --- Search & Filter State ---
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [selectedStatus, setSelectedStatus] = useState("");
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState<TOrder | null>(null);
 
-  const { data: ordersData, isLoading, refetch } = useGetAllOrdersQuery({});
+  // Debouncing logic
+  useEffect(() => {
+    const handler = setTimeout(() => setDebouncedSearch(searchTerm), 300);
+    return () => clearTimeout(handler);
+  }, [searchTerm]);
+
+  // Prepare Query Params
+  const queryParams: Record<string, unknown> = {};
+  if (debouncedSearch) queryParams.search = debouncedSearch;
+  if (selectedStatus) queryParams.status = selectedStatus;
+
+  const { data: ordersData, isLoading, refetch } = useGetAllOrdersQuery(queryParams);
   const orders: TOrder[] = ordersData?.data ?? [];
 
   const [updateOrder, { isLoading: isUpdating }] = useUpdateOrderMutation();
@@ -67,7 +85,7 @@ const OrdersPage = () => {
       handleClose();
       refetch();
     } catch (err: any) {
-      toast.error(err?.data?.message ?? "Failed to update order status.");
+      toast.error(err?.data?.message || err?.data || "Failed to update order status.");
     }
   };
 
@@ -78,11 +96,11 @@ const OrdersPage = () => {
       toast.success("Order deleted.");
       refetch();
     } catch (err: any) {
-      toast.error(err?.data?.message ?? "Failed to delete order.");
+      toast.error(err?.data?.message || err?.data || "Failed to delete order.");
     }
   };
 
-  if (isLoading) {
+  if (isLoading && !debouncedSearch && !selectedStatus) {
     return (
       <div className="flex items-center justify-center h-[60vh]">
         <Loader2 className="w-10 h-10 animate-spin text-teal-500" />
@@ -93,7 +111,7 @@ const OrdersPage = () => {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-3">
             <div className="p-2 rounded-xl bg-teal-500/10 border border-teal-500/20">
@@ -102,12 +120,43 @@ const OrdersPage = () => {
             Orders
           </h1>
           <p className="text-slate-500 text-sm mt-1">
-            {orders.length} order{orders.length !== 1 ? "s" : ""} total
+            {orders.length} order{orders.length !== 1 ? "s" : ""} found
           </p>
         </div>
       </div>
 
       <div className="h-px bg-gradient-to-r from-teal-500/20 via-white/[0.06] to-transparent" />
+
+      {/* Search & Filter */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 p-4 rounded-2xl bg-[#0d1117] border border-white/[0.06] shadow-xl">
+        <div className="md:col-span-2 relative">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500" />
+          <input
+            type="text"
+            placeholder="Search by customer name, product, or order ID..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 rounded-xl bg-white/[0.03] border border-white/[0.08] text-slate-200 text-sm focus:outline-none focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/30 transition-all"
+          />
+        </div>
+
+        <div className="relative">
+          <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-500 pointer-events-none" />
+          <select
+            value={selectedStatus}
+            onChange={(e) => setSelectedStatus(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 rounded-xl bg-black border border-white/[0.08] text-slate-200 text-sm focus:outline-none focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/30 transition-all appearance-none cursor-pointer"
+          >
+            <option value="">All Statuses</option>
+            <option value="pending">Pending</option>
+            <option value="confirmed">Confirmed</option>
+            <option value="shipped">Shipped</option>
+            <option value="delivered">Delivered</option>
+            <option value="cancelled">Cancelled</option>
+            <option value="returned">Returned</option>
+          </select>
+        </div>
+      </div>
 
       {/* Table */}
       <div className="rounded-2xl border border-white/[0.06] bg-[#0d1117] overflow-hidden shadow-2xl">
@@ -142,8 +191,14 @@ const OrdersPage = () => {
                         #{(order as any)._id?.slice(-8).toUpperCase() || "ORD-001"}
                       </td>
                       <td className="px-5 py-4">
-                        <p className="font-medium text-slate-200">{order.customerName}</p>
-                        <p className="text-[10px] text-slate-600 mt-0.5">{order.shippingAddress.city}, {order.shippingAddress.country || "BD"}</p>
+                        <div className="space-y-1">
+                          <p className="font-bold text-slate-100">{order.customerName}</p>
+                          <div className="flex items-center gap-2 text-[10px] text-slate-500">
+                            <span>{order.shippingAddress.phone}</span>
+                            <span className="w-1 h-1 rounded-full bg-slate-700" />
+                            <span>{order.shippingAddress.city}</span>
+                          </div>
+                        </div>
                       </td>
                       <td className="px-5 py-4 text-slate-400">
                         {order.productName || "Product Name"}

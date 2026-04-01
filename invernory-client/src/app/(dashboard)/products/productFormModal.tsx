@@ -51,6 +51,7 @@ const ProductFormModal = ({
     description: "",
     category: "",
     thumbnail: "",
+    price: 0,
     stockQuantity: 0,
     minStockThreshold: 5,
     status: "active" as "active" | "out_of_stock" | "low_stock",
@@ -66,6 +67,7 @@ const ProductFormModal = ({
           description: product.description || "",
           category: (product.category as any)?._id || product.category || "",
           thumbnail: product.thumbnail || "",
+          price: product.price || 0,
           stockQuantity: product.stockQuantity ?? 0,
           minStockThreshold: product.minStockThreshold ?? 5,
           status: product.status || "active",
@@ -249,6 +251,22 @@ const ProductFormModal = ({
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-white/[0.04]">
               <div>
                 <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 flex items-center justify-between">
+                  Unit Price ($)
+                  <span className="text-[9px] lowercase font-normal italic opacity-60">sale price per unit</span>
+                </label>
+                <Input
+                  type="number"
+                  name="price"
+                  value={formData.price}
+                  onChange={handleInputChange}
+                  min="0"
+                  step="0.01"
+                  required
+                  disabled={isLoading}
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 flex items-center justify-between">
                   Stock Quantity
                   <span className="text-[9px] lowercase font-normal italic opacity-60">available units</span>
                 </label>
@@ -262,21 +280,21 @@ const ProductFormModal = ({
                   disabled={isLoading}
                 />
               </div>
-              <div>
-                <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 flex items-center justify-between">
-                  Min Stock Threshold
-                  <span className="text-[9px] lowercase font-normal italic opacity-60 text-amber-500/80 flex items-center gap-1"><AlertCircle size={10} /> trigger alert</span>
-                </label>
-                <Input
-                  type="number"
-                  name="minStockThreshold"
-                  value={formData.minStockThreshold}
-                  onChange={handleInputChange}
-                  min="0"
-                  required
-                  disabled={isLoading}
-                />
-              </div>
+            </div>
+            <div>
+              <label className="block text-[10px] font-bold text-slate-500 uppercase tracking-widest mb-1.5 flex items-center justify-between">
+                Min Stock Threshold
+                <span className="text-[9px] lowercase font-normal italic opacity-60 text-amber-500/80 flex items-center gap-1"><AlertCircle size={10} /> trigger alert</span>
+              </label>
+              <Input
+                type="number"
+                name="minStockThreshold"
+                value={formData.minStockThreshold}
+                onChange={handleInputChange}
+                min="0"
+                required
+                disabled={isLoading}
+              />
             </div>
           </div>
 

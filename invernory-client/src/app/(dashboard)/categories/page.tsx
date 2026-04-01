@@ -48,7 +48,7 @@ const CategoriesPage = () => {
             handleClose();
             refetch();
         } catch (err: any) {
-            toast.error(err?.data?.message ?? "Failed to save category.");
+            toast.error(err?.data?.message || err?.data || "Failed to save category.");
         }
     };
 
@@ -59,7 +59,7 @@ const CategoriesPage = () => {
             toast.success("Category deleted.");
             refetch();
         } catch (err: any) {
-            toast.error(err?.data?.message ?? "Failed to delete category.");
+            toast.error(err?.data?.message || err?.data || "Failed to delete category.");
         }
     };
 
