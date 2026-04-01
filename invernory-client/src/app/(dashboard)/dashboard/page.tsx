@@ -1,8 +1,19 @@
 "use client";
 
-import { useGetAllBlogsQuery } from "@/redux/api/blogApi";
-import { useGetAllProjectsQuery } from "@/redux/api/productApi";
-import { Briefcase, Newspaper, Code2, Star, ArrowUpRight, TrendingUp } from "lucide-react";
+import { useGetAllOrdersQuery } from "@/redux/api/orderApi";
+import { useGetAllProductsQuery } from "@/redux/api/productApi";
+import { 
+  Package, 
+  ShoppingCart, 
+  AlertTriangle, 
+  XCircle, 
+  ArrowUpRight, 
+  TrendingUp,
+  PlusCircle,
+  ClipboardList,
+  Layers,
+  BarChart3
+} from "lucide-react";
 import Link from "next/link";
 
 type StatCardProps = {
@@ -12,12 +23,13 @@ type StatCardProps = {
   accent: string;
   href: string;
   trend?: string;
+  trendColor?: string;
 };
 
-const StatCard = ({ title, value, icon, accent, href, trend }: StatCardProps) => (
+const StatCard = ({ title, value, icon, accent, href, trend, trendColor = "text-emerald-400" }: StatCardProps) => (
   <Link href={href} className="group block">
     <div
-      className={`relative p-6 rounded-2xl border border-white/[0.06] bg-[#0d1117] hover:border-white/[0.12] transition-all duration-300 overflow-hidden`}
+      className={`relative p-6 rounded-2xl border border-white/[0.06] bg-[#0d1117] hover:border-white/[0.12] transition-all duration-300 overflow-hidden shadow-xl`}
     >
       {/* glow blob */}
       <div
@@ -34,13 +46,13 @@ const StatCard = ({ title, value, icon, accent, href, trend }: StatCardProps) =>
 
         <p className="text-slate-400 text-sm font-medium">{title}</p>
         <p className="text-3xl font-bold text-white mt-1 tracking-tight">
-          {value ?? "—"}
+          {value ?? "0"}
         </p>
 
         {trend && (
           <div className="flex items-center gap-1 mt-3">
-            <TrendingUp className="w-3 h-3 text-emerald-400" />
-            <span className="text-xs text-emerald-400 font-medium">{trend}</span>
+            <TrendingUp className={`w-3 h-3 ${trendColor}`} />
+            <span className={`text-xs ${trendColor} font-medium`}>{trend}</span>
           </div>
         )}
       </div>
@@ -72,19 +84,38 @@ const QuickActionCard = ({
 );
 
 const DashboardPage = () => {
-  const { data: projectsData } = useGetAllProjectsQuery({});
-  const { data: blogsData } = useGetAllBlogsQuery({});
+  const { data: productsData } = useGetAllProductsQuery({});
+  const { data: ordersData } = useGetAllOrdersQuery({});
+
+  const totalProducts = productsData?.data?.length || 0;
+  const totalOrders = ordersData?.data?.length || 0;
+  
+  // Filtering for low stock and out of stock
+  // Assuming the API returns products with stockQuantity and minStockThreshold
+  const lowStockProducts = productsData?.data?.filter((p: any) => 
+    (p.stockQuantity ?? 0) > 0 && (p.stockQuantity ?? 0) <= (p.minStockThreshold ?? 5)
+  ).length || 0;
+
+  const outOfStockProducts = productsData?.data?.filter((p: any) => 
+    (p.stockQuantity ?? 0) === 0
+  ).length || 0;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 animate-in fade-in duration-700">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold text-white tracking-tight">
-          Dashboard Overview
-        </h1>
-        <p className="text-slate-500 text-sm mt-1">
-          Welcome back — here's what's happening with your portfolio.
-        </p>
+      <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+        <div>
+          <h1 className="text-3xl font-bold text-white tracking-tight">
+            Inventory Dashboard
+          </h1>
+          <p className="text-slate-500 text-sm mt-1">
+            Real-time overview of your warehouse and order status.
+          </p>
+        </div>
+        <div className="flex items-center gap-2 text-xs font-medium text-slate-400 bg-white/[0.03] border border-white/[0.06] px-3 py-1.5 rounded-full">
+          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          System Live
+        </div>
       </div>
 
       {/* Divider line */}
@@ -92,72 +123,78 @@ const DashboardPage = () => {
 
       {/* Stat Cards */}
       <div>
-        <p className="text-[11px] uppercase tracking-widest text-slate-600 font-semibold mb-4">
-          Content Stats
+        <p className="text-[11px] uppercase tracking-widest text-slate-600 font-semibold mb-4 flex items-center gap-2">
+          <BarChart3 className="w-3 h-3" />
+          Key Metrics
         </p>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
           <StatCard
-            title="Total Projects"
-            value={projectsData?.meta?.total}
-            icon={<Briefcase className="w-5 h-5 text-teal-400" />}
+            title="Total Products"
+            value={totalProducts}
+            icon={<Package className="w-5 h-5 text-teal-400" />}
             accent="bg-teal-500"
-            href="/projects"
-            trend="Live on portfolio"
+            href="/products"
+            trend="Active in catalog"
           />
           <StatCard
-            title="Total Blog Posts"
-            value={blogsData?.meta?.total}
-            icon={<Newspaper className="w-5 h-5 text-violet-400" />}
+            title="Pending Orders"
+            value={totalOrders}
+            icon={<ShoppingCart className="w-5 h-5 text-violet-400" />}
             accent="bg-violet-500"
-            href="/blogs"
-            trend="Published articles"
+            href="/orders"
+            trend="Ready for dispatch"
           />
           <StatCard
-            title="Skills Listed"
-            value="—"
-            icon={<Code2 className="w-5 h-5 text-amber-400" />}
+            title="Low Stock"
+            value={lowStockProducts}
+            icon={<AlertTriangle className="w-5 h-5 text-amber-400" />}
             accent="bg-amber-500"
-            href="/skills"
+            href="/products?filter=low_stock"
+            trend={lowStockProducts > 0 ? "Requires restock" : "Inventory healthy"}
+            trendColor={lowStockProducts > 0 ? "text-amber-400" : "text-emerald-400"}
           />
           <StatCard
-            title="Reviews"
-            value="—"
-            icon={<Star className="w-5 h-5 text-rose-400" />}
+            title="Out of Stock"
+            value={outOfStockProducts}
+            icon={<XCircle className="w-5 h-5 text-rose-400" />}
             accent="bg-rose-500"
-            href="/reviews"
+            href="/products?filter=out_of_stock"
+            trend={outOfStockProducts > 0 ? "Revenue loss risk" : "Full availability"}
+            trendColor={outOfStockProducts > 0 ? "text-rose-400" : "text-emerald-400"}
           />
         </div>
       </div>
 
       {/* Quick Actions */}
       <div>
-        <p className="text-[11px] uppercase tracking-widest text-slate-600 font-semibold mb-4">
-          Quick Actions
+        <p className="text-[11px] uppercase tracking-widest text-slate-600 font-semibold mb-4 flex items-center gap-2">
+          <ClipboardList className="w-3 h-3" />
+          Operational Actions
         </p>
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <QuickActionCard
-            href="/projects"
-            title="Manage Projects"
-            description="Add, edit or remove portfolio projects"
-            icon={<Briefcase className="w-4 h-4 text-teal-400" />}
+            href="/products"
+            title="Product Management"
+            description="Add, edit or update warehouse items"
+            icon={<PlusCircle className="w-4 h-4 text-teal-400" />}
           />
           <QuickActionCard
-            href="/blogs"
-            title="Manage Blogs"
-            description="Write and publish blog articles"
-            icon={<Newspaper className="w-4 h-4 text-violet-400" />}
+            href="/orders"
+            title="Order Fulfillment"
+            description="Process pending sales and shipments"
+            icon={<ShoppingCart className="w-4 h-4 text-violet-400" />}
           />
           <QuickActionCard
-            href="/skills"
-            title="Manage Skills"
-            description="Update your technical skills & categories"
-            icon={<Code2 className="w-4 h-4 text-amber-400" />}
+            href="/categories"
+            title="Category Setup"
+            description="Organize products by departments"
+            icon={<Layers className="w-4 h-4 text-amber-400" />}
           />
           <QuickActionCard
-            href="/reviews"
-            title="Manage Reviews"
-            description="View and publish client testimonials"
-            icon={<Star className="w-4 h-4 text-rose-400" />}
+            href="/reports"
+            title="Inventory Reports"
+            description="Export detailed stock analytics"
+            icon={<BarChart3 className="w-4 h-4 text-rose-400" />}
           />
         </div>
       </div>

@@ -1,9 +1,9 @@
 import { tagTypes } from "../tag-types";
 import { baseApi } from "./baseApi";
 
-const skillApi = baseApi.injectEndpoints({
+const orderApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
-    createSkill: build.mutation({
+    createOrder: build.mutation({
       query: (data) => ({
         url: "/orders",
         method: "POST",
@@ -12,7 +12,7 @@ const skillApi = baseApi.injectEndpoints({
       invalidatesTags: [tagTypes.orders],
     }),
 
-    getAllSkills: build.query({
+    getAllOrders: build.query({
       query: () => ({
         url: "/orders",
         method: "GET",
@@ -20,7 +20,7 @@ const skillApi = baseApi.injectEndpoints({
       providesTags: [tagTypes.orders],
     }),
 
-    updateSkill: build.mutation({
+    updateOrder: build.mutation({
       query: ({ id, data }) => ({
         url: `/orders/${id}`,
         method: "PATCH",
@@ -29,7 +29,7 @@ const skillApi = baseApi.injectEndpoints({
       invalidatesTags: [tagTypes.orders],
     }),
 
-    deleteSkill: build.mutation({
+    deleteOrder: build.mutation({
       query: (id) => ({
         url: `/orders/${id}`,
         method: "DELETE",
@@ -40,8 +40,8 @@ const skillApi = baseApi.injectEndpoints({
 });
 
 export const {
-  useCreateSkillMutation,
-  useGetAllSkillsQuery,
-  useUpdateSkillMutation,
-  useDeleteSkillMutation,
-} = skillApi;
+  useCreateOrderMutation,
+  useGetAllOrdersQuery,
+  useUpdateOrderMutation,
+  useDeleteOrderMutation,
+} = orderApi;

@@ -1,9 +1,9 @@
 import { tagTypes } from "../tag-types";
 import { baseApi } from "./baseApi";
 
-const ProjectApi = baseApi.injectEndpoints({
+const ProductApi = baseApi.injectEndpoints({
   endpoints: (build) => ({
-    createProject: build.mutation({
+    createProduct: build.mutation({
       query: (data) => ({
         url: "/products",
         method: "POST",
@@ -13,27 +13,22 @@ const ProjectApi = baseApi.injectEndpoints({
       invalidatesTags: [tagTypes.products],
     }),
 
-    getAllProjects: build.query({
-      // query: (arg: Record<string, any>) => ({
+    getAllProducts: build.query({
       query: () => ({
         url: "/products",
         method: "GET",
-        // params: arg,
       }),
       providesTags: [tagTypes.products],
     }),
 
-    getSingleProject: build.query({
-      query: (projectId) => (
-        console.log("singleId", projectId),
-        {
-          url: `/products/${projectId}`,
-          method: "GET",
-        }
-      ),
+    getSingleProduct: build.query({
+      query: (productId) => ({
+        url: `/products/${productId}`,
+        method: "GET",
+      }),
     }),
 
-    updateProject: build.mutation({
+    updateProduct: build.mutation({
       query: ({ id, data }) => ({
         url: `/products/${id}`,
         method: "PUT",
@@ -42,7 +37,7 @@ const ProjectApi = baseApi.injectEndpoints({
       invalidatesTags: [tagTypes.products],
     }),
 
-    deleteProject: build.mutation({
+    deleteProduct: build.mutation({
       query: (id) => ({
         url: `/products/${id}`,
         method: "DELETE",
@@ -53,9 +48,9 @@ const ProjectApi = baseApi.injectEndpoints({
 });
 
 export const {
-  useCreateProjectMutation,
-  useGetAllProjectsQuery,
-  useGetSingleProjectQuery,
-  useUpdateProjectMutation,
-  useDeleteProjectMutation
-} = ProjectApi;
+  useCreateProductMutation,
+  useGetAllProductsQuery,
+  useGetSingleProductQuery,
+  useUpdateProductMutation,
+  useDeleteProductMutation,
+} = ProductApi;

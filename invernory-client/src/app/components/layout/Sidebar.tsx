@@ -3,10 +3,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard,
-  Newspaper,
-  Briefcase,
-  Star,
-  Code2,
+  Package,
+  ShoppingCart,
+  Layers,
+  Settings,
   LogOut,
   ChevronRight,
 } from "lucide-react";
@@ -17,10 +17,10 @@ import { useEffect, useState } from "react";
 
 const navItems = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Projects", href: "/projects", icon: Briefcase },
-  { name: "Blogs", href: "/blogs", icon: Newspaper },
-  { name: "Skills", href: "/skills", icon: Code2 },
-  { name: "Reviews", href: "/reviews", icon: Star },
+  { name: "Products", href: "/products", icon: Package },
+  { name: "Orders", href: "/orders", icon: ShoppingCart },
+  { name: "Categories", href: "/categories", icon: Layers },
+  { name: "Settings", href: "/settings", icon: Settings },
 ];
 
 const Sidebar = () => {
@@ -50,8 +50,8 @@ const Sidebar = () => {
             <span className="text-white font-bold text-sm">A</span>
           </div>
           <div>
-            <p className="text-white font-semibold text-sm leading-none">Admin Panel</p>
-            <p className="text-slate-500 text-xs mt-0.5">Portfolio Dashboard</p>
+            <p className="text-white font-semibold text-sm leading-none">Sultan Bazar</p>
+            <p className="text-slate-500 text-[10px] mt-1 font-medium uppercase tracking-wider">Inventory Manager</p>
           </div>
         </div>
       </div>

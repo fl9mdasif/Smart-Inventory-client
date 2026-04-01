@@ -25,6 +25,17 @@ export type IGenericErrorMessage = {
 };
 
 
+export interface TCategory {
+  _id?: string;
+  name: string;
+  slug?: string;
+  description?: string;
+  thumbnail?: string;
+  isActive: boolean;
+  createdAt?: string;
+  updatedAt?: string;
+}
+
 export type TProductStatus = 'active' | 'out_of_stock' | 'low_stock';
 
 export interface TProduct {
@@ -36,7 +47,6 @@ export interface TProduct {
   status?: TProductStatus;
   stockQuantity?: number;
   minStockThreshold?: number;
-  /** When true, admin has manually dismissed this product from the restock queue */
   restockIgnored?: boolean;
 }
 
