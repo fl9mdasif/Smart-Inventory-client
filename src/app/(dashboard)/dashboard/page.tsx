@@ -15,10 +15,20 @@ import {
   BarChart3,
   Clock,
   History,
-  Activity as ActivityIcon
+  Activity as ActivityIcon,
+  TrendingDown
 } from "lucide-react";
 import Link from "next/link";
 import { useGetRecentActivitiesQuery } from "@/redux/api/activityApi";
+import { 
+  AreaChart, 
+  Area, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  ResponsiveContainer 
+} from 'recharts';
 
 type StatCardProps = {
   title: string;
@@ -154,6 +164,24 @@ const DashboardPage = () => {
     })
     .reduce((sum: number, order: any) => sum + (order.totalAmount || 0), 0);
 
+  // --- Chart Data Aggregation (Last 7 Days) ---
+  const last7Days = Array.from({ length: 7 }, (_, i) => {
+    const d = new Date();
+    d.setDate(d.getDate() - i);
+    return d.toISOString().split('T')[0];
+  }).reverse();
+
+  const chartData = last7Days.map(date => {
+    const dailyRevenue = deliveredOrders
+      .filter((o: any) => (o.deliveredAt ? new Date(o.deliveredAt).toISOString().split('T')[0] : "") === date)
+      .reduce((sum: number, order: any) => sum + (order.totalAmount || 0), 0);
+    
+    return {
+      name: new Date(date).toLocaleDateString('en-US', { weekday: 'short' }),
+      revenue: dailyRevenue
+    };
+  });
+
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
       {/* Header */}
@@ -244,49 +272,86 @@ const DashboardPage = () => {
         </div>
       </div>
 
-      {/* Bottom Section: Quick Actions & Activity Log */}
+      {/* System Monitoring Group: Chart (2) + Activity Log (1) */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Quick Actions */}
-        <div className="lg:col-span-2 space-y-4">
-          <p className="text-[11px] uppercase tracking-widest text-slate-600 font-semibold flex items-center gap-2">
-            <ClipboardList className="w-3 h-3" />
-            Operational Actions
-          </p>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            <QuickActionCard
-              href="/products"
-              title="Product Management"
-              description="Add, edit or update warehouse items"
-              icon={<PlusCircle className="w-4 h-4 text-teal-400" />}
-            />
-            <QuickActionCard
-              href="/orders"
-              title="Order Fulfillment"
-              description="Process pending sales and shipments"
-              icon={<ShoppingCart className="w-4 h-4 text-violet-400" />}
-            />
-            <QuickActionCard
-              href="/categories"
-              title="Category Setup"
-              description="Organize products by departments"
-              icon={<Layers className="w-4 h-4 text-amber-400" />}
-            />
-            <QuickActionCard
-              href="/dashboard"
-              title="Inventory Reports"
-              description="Export detailed stock analytics"
-              icon={<BarChart3 className="w-4 h-4 text-rose-400" />}
-            />
+        {/* Analytics Chart - Span 2 */}
+        <div className="lg:col-span-2 animate-in slide-in-from-left duration-700 delay-200">
+          <div className="p-6 h-full rounded-2xl border border-white/[0.06] bg-[#0d1117] shadow-xl overflow-hidden relative">
+            {/* background glow */}
+            <div className="absolute top-0 right-0 w-64 h-64 bg-teal-500/5 blur-[100px] pointer-events-none" />
+            
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+              <div>
+                <p className="text-[11px] uppercase tracking-widest text-slate-600 font-semibold flex items-center gap-2 mb-1">
+                  <TrendingUp className="w-3 h-3 text-emerald-400" />
+                  Growth Analytics
+                </p>
+                <h2 className="text-xl font-bold text-white tracking-tight">Revenue Overview</h2>
+              </div>
+              <div className="flex items-center gap-4 text-xs font-medium bg-white/[0.03] border border-white/[0.06] px-3 py-2 rounded-xl">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 rounded-full bg-teal-500" />
+                  <span className="text-slate-400">Past 7 Days</span>
+                </div>
+              </div>
+            </div>
+
+            <div className="h-[320px] w-full">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <defs>
+                    <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#14b8a6" stopOpacity={0.3}/>
+                      <stop offset="95%" stopColor="#14b8a6" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#ffffff08" />
+                  <XAxis 
+                    dataKey="name" 
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: '#64748b', fontSize: 12 }}
+                    dy={10}
+                  />
+                  <YAxis 
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fill: '#64748b', fontSize: 11 }}
+                    tickFormatter={(val) => `৳${val/1000}k`}
+                  />
+                  <Tooltip 
+                    contentStyle={{ 
+                      backgroundColor: '#0d1117', 
+                      borderColor: '#ffffff10',
+                      borderRadius: '12px',
+                      boxShadow: '0 10px 15px -3px rgb(0 0 0 / 0.5)'
+                    }}
+                    itemStyle={{ color: '#14b8a6', fontWeight: 600 }}
+                    labelStyle={{ color: '#94a3b8', marginBottom: '4px' }}
+                    formatter={(value: any) => [`৳${value.toLocaleString()}`, 'Revenue']}
+                  />
+                  <Area 
+                    type="monotone" 
+                    dataKey="revenue" 
+                    stroke="#14b8a6" 
+                    strokeWidth={3}
+                    fillOpacity={1} 
+                    fill="url(#colorRevenue)" 
+                    animationDuration={2000}
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
           </div>
         </div>
 
-        {/* Activity Log */}
-        <div className="space-y-4">
-          <p className="text-[11px] uppercase tracking-widest text-slate-600 font-semibold flex items-center gap-2">
+        {/* Recent Activity - Span 1 */}
+        <div className="animate-in slide-in-from-right duration-700 delay-200">
+          <p className="text-[11px] uppercase tracking-widest text-slate-600 font-semibold flex items-center gap-2 mb-4">
             <History className="w-3 h-3" />
             Recent Activity
           </p>
-          <div className="rounded-2xl border border-white/[0.06] bg-[#0d1117] p-2 min-h-[300px]">
+          <div className="rounded-2xl border border-white/[0.06] bg-[#0d1117] p-2 min-h-[416px] max-h-[416px] overflow-y-auto custom-scrollbar shadow-xl">
             {activitiesLoading ? (
               <div className="flex flex-col items-center justify-center py-12 gap-3">
                 <div className="w-5 h-5 border-2 border-teal-500/20 border-t-teal-500 rounded-full animate-spin" />
@@ -299,7 +364,7 @@ const DashboardPage = () => {
                 ))}
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center py-12 text-center px-4">
+              <div className="flex flex-col items-center justify-center py-24 text-center px-4">
                 <div className="w-10 h-10 rounded-full bg-white/[0.03] flex items-center justify-center mb-3 text-slate-600">
                   <ActivityIcon size={20} />
                 </div>
@@ -308,6 +373,40 @@ const DashboardPage = () => {
               </div>
             )}
           </div>
+        </div>
+      </div>
+
+      {/* Operational Actions Section */}
+      <div className="space-y-4 animate-in fade-in duration-700 delay-300">
+        <p className="text-[11px] uppercase tracking-widest text-slate-600 font-semibold flex items-center gap-2">
+          <ClipboardList className="w-3 h-3" />
+          Operational Actions
+        </p>
+        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          <QuickActionCard
+            href="/products"
+            title="Product Management"
+            description="Add, edit or update warehouse items"
+            icon={<PlusCircle className="w-4 h-4 text-teal-400" />}
+          />
+          <QuickActionCard
+            href="/orders"
+            title="Order Fulfillment"
+            description="Process pending sales and shipments"
+            icon={<ShoppingCart className="w-4 h-4 text-violet-400" />}
+          />
+          <QuickActionCard
+            href="/categories"
+            title="Category Setup"
+            description="Organize products by departments"
+            icon={<Layers className="w-4 h-4 text-amber-400" />}
+          />
+          <QuickActionCard
+            href="/dashboard"
+            title="Inventory Reports"
+            description="Export detailed stock analytics"
+            icon={<BarChart3 className="w-4 h-4 text-rose-400" />}
+          />
         </div>
       </div>
     </div>
