@@ -44,11 +44,9 @@ const ProductsPage = () => {
   }, [searchTerm]);
 
   // Fetch Categories for filter
-  const { data: categories } = useGetAllCategoriesQuery({});
-  // const categories: TCategory[] = (categoriesData as { data: TCategory[] })?.data ?? [];
+  const { data: categoriesData, isLoading: categoriesLoading } = useGetAllCategoriesQuery({});
+  const categories: TCategory[] = (categoriesData as any)?.data ?? [];
 
-
-  // console.log('c', categories);
   // Prepare Query Params
   const queryParams: Record<string, unknown> = {};
   if (debouncedSearch) queryParams.search = debouncedSearch;
@@ -117,7 +115,7 @@ const ProductsPage = () => {
     }
   };
 
-  if (isLoading && !debouncedSearch && !selectedCategory && !selectedStatus) {
+  if ((isLoading || categoriesLoading) && !debouncedSearch && !selectedCategory && !selectedStatus) {
     return (
       <div className="flex items-center justify-center h-[60vh]">
         <Loader2 className="w-10 h-10 animate-spin text-teal-500" />
@@ -172,8 +170,7 @@ const ProductsPage = () => {
             className="w-full pl-10 pr-4 py-2 rounded-xl bg-black border border-white/[0.08] text-slate-200 text-sm focus:outline-none focus:border-teal-500/50 focus:ring-1 focus:ring-teal-500/30 transition-all appearance-none cursor-pointer"
           >
             <option value="">All Categories</option>
-            {categories.map((cat: TCategory) => (
-              // console.log(cat),
+            {categories?.map((cat: TCategory) => (
               <option key={cat._id} value={cat._id}>{cat.name}</option>
             ))}
           </select>

@@ -22,8 +22,8 @@ const CategoriesPage = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingCategory, setEditingCategory] = useState<TCategory | null>(null);
 
-    const { data: categories, isLoading, refetch } = useGetAllCategoriesQuery({});
-    // const categories
+    const { data: categoriesData, isLoading, refetch } = useGetAllCategoriesQuery({});
+    const categories: TCategory[] = (categoriesData as any)?.data ?? [];
     const [createCategory, { isLoading: isCreating }] = useCreateCategoryMutation();
     const [updateCategory, { isLoading: isUpdating }] = useUpdateCategoryMutation();
     const [deleteCategory, { isLoading: isDeleting }] = useDeleteCategoryMutation();
@@ -85,7 +85,7 @@ const CategoriesPage = () => {
                         Categories
                     </h1>
                     <p className="text-slate-500 text-sm mt-1">
-                        {categories.length} categor{categories.length !== 1 ? "ies" : "y"} total
+                        {categories?.length || 0} categor{categories?.length !== 1 ? "ies" : "y"} total
                     </p>
                 </div>
                 <button
@@ -101,7 +101,7 @@ const CategoriesPage = () => {
 
             {/* Table */}
             <div className="rounded-2xl border border-white/[0.06] bg-[#0d1117] overflow-hidden shadow-2xl">
-                {categories.length === 0 ? (
+                {(categories?.length || 0) === 0 ? (
                     <div className="py-16 text-center">
                         <div className="mx-auto w-12 h-12 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center mb-4">
                             <Layers className="w-6 h-6 text-teal-400" />
@@ -121,7 +121,7 @@ const CategoriesPage = () => {
                                 </tr>
                             </thead>
                             <tbody className="divide-y divide-white/[0.04]">
-                                {categories.map((category: TCategory) => (
+                                {categories?.map((category: TCategory) => (
                                     <tr key={category._id} className="hover:bg-white/[0.02] transition-colors group">
                                         <td className="px-5 py-3.5">
                                             <div className="flex items-center gap-3">
