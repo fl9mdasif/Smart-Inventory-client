@@ -10,17 +10,20 @@ import {
   LogOut,
   ChevronRight,
   X,
+  AlertTriangle,
 } from "lucide-react";
 import { logoutUser } from "@/services/actions/logoutUser";
 import { getUserInfo, removeUser } from "@/services/auth.services";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
+import { useGetAllProductsQuery } from "@/redux/api/productApi";
 
 const navItems = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { name: "Products", href: "/products", icon: Package },
   { name: "Orders", href: "/orders", icon: ShoppingCart },
   { name: "Categories", href: "/categories", icon: Layers },
+  { name: "Restock Queue", href: "/restock-queue", icon: AlertTriangle, isRestock: true },
   { name: "Settings", href: "/settings", icon: Settings },
 ];
 
@@ -47,6 +50,12 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
     router.refresh();
   };
 
+  const { data: productsData } = useGetAllProductsQuery({});
+
+  const lowStockProducts = productsData?.data?.filter((p: any) =>
+    (p.stockQuantity ?? 0) <= (p.minStockThreshold ?? 5)
+  ) || [];
+
   const SidebarContent = () => (
     <>
       {/* brand */}
@@ -60,9 +69,9 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
             <p className="text-slate-500 text-[10px] mt-1 font-medium uppercase tracking-wider">Inventory Manager</p>
           </div>
         </div>
-        
+
         {/* Mobile Close Button */}
-        <button 
+        <button
           onClick={onClose}
           className="lg:hidden p-2 rounded-xl text-slate-500 hover:text-white transition-colors"
         >
@@ -83,21 +92,24 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
                 <Link
                   href={item.href}
                   onClick={() => onClose?.()}
-                  className={`group flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${
-                    isActive
-                      ? "bg-teal-500/10 text-teal-400 border border-teal-500/20"
-                      : "text-slate-400 hover:bg-white/[0.04] hover:text-slate-200 border border-transparent"
-                  }`}
+                  className={`group flex items-center justify-between px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200 ${isActive
+                    ? "bg-teal-500/10 text-teal-400 border border-teal-500/20"
+                    : "text-slate-400 hover:bg-white/[0.04] hover:text-slate-200 border border-transparent"
+                    }`}
                 >
                   <span className="flex items-center gap-3">
                     <item.icon
-                      className={`w-4 h-4 flex-shrink-0 transition-colors ${
-                        isActive ? "text-teal-400" : "text-slate-500 group-hover:text-slate-300"
-                      }`}
+                      className={`w-4 h-4 flex-shrink-0 transition-colors ${isActive ? "text-teal-400" : "text-slate-500 group-hover:text-slate-300"
+                        }`}
                     />
                     {item.name}
                   </span>
-                  {isActive && (
+                  {item.isRestock && lowStockProducts.length > 0 && (
+                    <span className="px-1.5 py-0.5 rounded-full bg-amber-500 text-black text-[10px] font-bold shadow-lg shadow-amber-500/20">
+                      {lowStockProducts.length}
+                    </span>
+                  )}
+                  {isActive && !item.isRestock && (
                     <ChevronRight className="w-3.5 h-3.5 text-teal-500 opacity-70" />
                   )}
                 </Link>
@@ -105,6 +117,8 @@ const Sidebar = ({ isOpen, onClose }: SidebarProps) => {
             );
           })}
         </ul>
+
+
       </nav>
 
       {/* logout */}

@@ -1,36 +1,76 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🖥️ Smart Inventory & Order Management Dashboard
 
-## Getting Started
+A high-performance, modern web application designed for seamless warehouse management and real-time sales analytics. Built with **Next.js 15**, **Redux Toolkit**, and **Tailwind CSS**, this dashboard provides a premium, data-driven experience for inventory administrators.
 
-First, run the development server:
+---
 
+## ✨ Dashboard Preview
+
+![Dashboard Preview](https://i.ibb.co/chZFv0mS/blob.jpg)
+
+---
+
+## 🚀 Key Features
+
+### 📊 Real-time Revenue Analytics
+- **Growth Tracking**: Interactive `AreaCharts` powered by **Recharts**, providing daily revenue insights with custom gradients and tooltips.
+- **Dynamic Aggregation**: Automated calculation of rolling 7-day sales and performance metrics.
+
+### ⚠️ Automated Restock Queue
+- **Intelligent Thresholds**: System-wide monitoring that flags products where `stockQuantity <= minStockThreshold`.
+- **Dedicated Fulfillment View**: A specialized workspace for restocking low or out-of-stock items, complete with status-based color coding (Amber for low, Rose for critical).
+- **Sidebar Alerts**: Live count badges in the navigation drawer ensure you never miss an inventory shortage.
+
+### 📦 Complete Inventory Lifecycle
+- **Product Management**: Desktop-class interface for adding, editing, and archiving products with image support.
+- **Categorization**: Multi-level category tagging for sophisticated catalog organization.
+- **Order Fulfillment**: End-to-end status tracking from `Pending` to `Delivered`.
+
+### 🛡️ Administrative Security
+- **Protected Routes**: Custom Next.js Middleware ensures that all management surfaces are restricted to authenticated users.
+- **Session Persistence**: Secure JWT handling with automated redirection to login on session expiry.
+
+---
+
+## 🛠️ Tech Stack
+
+- **Framework**: [Next.js 15 (App Router)](https://nextjs.org/)
+- **State Management**: [Redux Toolkit (RTK) & RTK Query](https://redux-toolkit.js.org/)
+- **Styling**: [Tailwind CSS 4.0](https://tailwindcss.com/)
+- **Data Visualization**: [Recharts](https://recharts.org/)
+- **Icons**: [Lucide React](https://lucide.dev/)
+- **Validation**: [Zod](https://zod.dev/) & [React Hook Form](https://react-hook-form.com/)
+
+---
+
+## 🏃‍♂️ Getting Started
+
+### Prerequisites
+- Node.js (v18.17+)
+- A running instance of the [Inventory Server](https://github.com/fl9mdasif/Smart-Inventory-Order-Management-System)
+
+### 1. Installation
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/fl9mdasif/Smart-Inventory-client
+cd Smart-Inventory-client
+npm install
+```
+npm install
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### 2. Configuration
+Create a `.env.local` file:
+```env
+NEXT_PUBLIC_API_URL=http://localhost:5000/api/v1
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 3. Development
+```bash
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+The application will be available at `http://localhost:3000`.
 
-## Learn More
+---
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+*Designed for high-speed operations and visual excellence.*
