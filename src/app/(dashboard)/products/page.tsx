@@ -45,7 +45,7 @@ const ProductsPage = () => {
 
   // Fetch Categories for filter
   const { data: categoriesData, isLoading: categoriesLoading } = useGetAllCategoriesQuery({});
-  const categories: TCategory[] = categoriesData?.data ?? [];
+  const categories: TCategory[] = categoriesData ?? [];
 
   // Prepare Query Params
   const queryParams: Record<string, unknown> = {};

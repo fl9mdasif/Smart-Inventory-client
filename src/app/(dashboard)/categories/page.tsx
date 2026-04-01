@@ -23,7 +23,7 @@ const CategoriesPage = () => {
     const [editingCategory, setEditingCategory] = useState<TCategory | null>(null);
 
     const { data: categoriesData, isLoading, refetch } = useGetAllCategoriesQuery({});
-    const categories: TCategory[] = categoriesData?.data ?? [];
+    const categories: TCategory[] = categoriesData ?? [];
     const [createCategory, { isLoading: isCreating }] = useCreateCategoryMutation();
     const [updateCategory, { isLoading: isUpdating }] = useUpdateCategoryMutation();
     const [deleteCategory, { isLoading: isDeleting }] = useDeleteCategoryMutation();
